@@ -14,7 +14,6 @@ let lastCrops = null;
 let lastClimate = null;
 let reportReady = false;
 let lang = "en";
-const openCards = new Set();
 const prevNums = {};
 const REDUCED = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
@@ -57,6 +56,7 @@ const I18N = {
         no_weather: "No weather data for this region yet", no_base: "No current-practice information",
         synth: "<strong>Note:</strong> this region is using simulated demo data because no measured local file is available yet.",
         ans_better: "In {region}, <b>{best}</b> needs <b>{pct}% less fresh water</b> than {base} — {years}.",
+        ans_short_better: "<strong>{best}</strong> needs <b>{pct}% less fresh water</b>", ans_short_none: "Today's practice already needs <b>the least fresh water</b>",
         ans_none: "In {region}, {base} already needs the least fresh water. <b>{alt}</b> needs <b>{pct}% more</b>{months} — {years}{ero}.",
         ans_ero: ", but loses about <b>{pct}% less soil</b> to erosion (C-factor; not yet verified)",
         ans_months: " in {m}", years_all: "in every year since {y}", years_some: "in {n} of {m} years",
@@ -65,8 +65,8 @@ const I18N = {
         scen_less: "With weather at {w}, today's practice needs <b>{d} m³/ha less</b> fresh water than in 2015–2025.",
         scen_w: "{t} °C, rain {r}%",
         tile_water: "Water to pump today", tile_water_scen: "Water to pump in this weather", tile_water_sub: "{v} m³ per 1,000 m² · {when}", when_year: "per year", when_in: "in {m}",
-        tile_best: "Best saving", tile_with: "with {name}", tile_more: "More water with the other option",
-        tile_sal: "Salt water months", tile_sal_sub: "{n} months a year · source in Step 4 (expert data)",
+        tile_best: "Best saving", tile_with: "vs. today's practice", tile_more: "More water with the other option",
+        tile_sal: "Salt water months", tile_sal_sub: "{n} months a year",
         tile_slope: "Median slope (SRTM)", tile_slope_sub: "10% of the land steeper than {p90}° · {share}% of rain falls in {m}",
         tile_bare: "Months with bare soil", tile_bare_sub: "today's practice",
         badge_current: "Current practice", badge_shrimp: "Shrimp phase not modeled", badge_saves: "Saves {p}% water", badge_more: "Uses {p}% more water",
@@ -130,7 +130,9 @@ const I18N = {
         several_years: "several years", ndvi_model: "Model calendar of current practice", ndvi_meas: "Measured satellite greenness (NDVI)",
         as_h: "Water-balance model assumptions &amp; data limits", sal_src: "Salinity months source:", stress_src: "Stress years source:",
         stress_y: "Stress year {y}:", ndvi_src: "Years used for NDVI:", disp_rule: "Calendar display rule:",
-        baseline: "Baseline", no_thresh: "No reference threshold", sal_nm: "Salinity not modeled"
+        baseline: "Baseline", no_thresh: "No reference threshold", sal_nm: "Salinity not modeled",
+        bare_n: "<b>{n}</b> months with bare soil", bare_none: "Soil covered all year", vs_base: "vs {id}",
+        details_k: "Option {id}", see_data_k: "Satellite check"
     },
     vi: {
         na: "chưa có", as_today: "Như hiện nay", months: "tháng", days: "ngày",
@@ -141,6 +143,8 @@ const I18N = {
         no_weather: "Chưa có dữ liệu khí tượng cho vùng này", no_base: "Chưa có thông tin cách đang làm",
         synth: "<strong>Lưu ý:</strong> vùng này đang dùng dữ liệu mô phỏng vì chưa có file đo thật.",
         ans_better: "Ở {region}, <b>{best}</b> cần <b>ít hơn {pct}% nước ngọt</b> so với {base} — {years}.",
+        ans_short_better: "<strong>{best}</strong> cần <b>ít hơn {pct}% nước ngọt</b>", ans_short_none: "Cách đang làm đã <b>tốn ít nước ngọt nhất</b>",
+        why: "Vì sao?", tip_aria: "Giải thích",
         ans_none: "Ở {region}, {base} đã là cách cần ít nước ngọt nhất. <b>{alt}</b> cần <b>thêm {pct}% nước</b>{months} — {years}{ero}.",
         ans_ero: ", nhưng giảm khoảng <b>{pct}% đất bị xói mòn</b> (hệ số C; chưa kiểm chứng)",
         ans_months: " trong {m}", years_all: "năm nào cũng vậy kể từ {y}", years_some: "trong {n}/{m} năm",
@@ -149,8 +153,8 @@ const I18N = {
         scen_less: "Với thời tiết {w}, cách đang làm cần <b>ít hơn {d} m³/ha</b> nước ngọt so với khí hậu 2015–2025.",
         scen_w: "{t} °C, mưa {r}%",
         tile_water: "Nước phải bơm hiện nay", tile_water_scen: "Nước phải bơm với thời tiết này", tile_water_sub: "{v} m³ mỗi 1.000 m² · {when}", when_year: "mỗi năm", when_in: "trong {m}",
-        tile_best: "Tiết kiệm nhiều nhất", tile_with: "với {name}", tile_more: "Phương án kia tốn thêm nước",
-        tile_sal: "Tháng nước mặn", tile_sal_sub: "{n} tháng mỗi năm · nguồn ở Bước 4 (dữ liệu chuyên gia)",
+        tile_best: "Tiết kiệm nhiều nhất", tile_with: "so với cách đang làm", tile_more: "Phương án kia tốn thêm nước",
+        tile_sal: "Tháng nước mặn", tile_sal_sub: "{n} tháng mỗi năm",
         tile_slope: "Độ dốc trung vị (SRTM)", tile_slope_sub: "10% diện tích dốc hơn {p90}° · {share}% lượng mưa rơi {m}",
         tile_bare: "Số tháng đất trống", tile_bare_sub: "cách đang làm",
         badge_current: "Đang làm", badge_shrimp: "Chưa tính vụ tôm", badge_saves: "Tiết kiệm {p}% nước", badge_more: "Tốn thêm {p}% nước",
@@ -208,34 +212,37 @@ const I18N = {
         chip_sal: "Độ mặn (trạm mặt đất)", chip_sm_label: "SMAP L4",
         report_idle: "Bấm nút để tạo báo cáo.", computing: "Đang tính...",
         report_err: "Không tạo được báo cáo (mã {c}).", conn_err: "Không kết nối được máy chủ: {m}",
-        ctx: "Đang xem: {r} · Thời tiết: {w}{s}", ctx_avg: "trung bình 2015–2025", ctx_strategy: " · Phương án: {n}", report_lang: "Báo cáo hiện có bằng tiếng Anh.",
+        ctx: "Đang xem: {r} · Thời tiết: {w}{s}", ctx_avg: "trung bình 2015–2025", ctx_strategy: " · Phương án: {n}", report_lang: "",
         ch_power: "Mưa, NASA POWER (mm/tháng)", ch_imerg: "Mưa, GPM IMERG (mm/tháng)", ch_eto: "Bốc thoát hơi ETo (mm/tháng)", ch_unit: "mm/tháng",
         ndvi_note: "Chỉ số NDVI từ vệ tinh MODIS, trung vị ô 3×3 km quanh điểm ({lat}, {lon}), trung bình {yrs}. Ô càng đậm là càng nhiều cây xanh; ô nhạt là ruộng trống, mới gieo hoặc ngập nước. Dòng trên là lịch mô hình của cách đang làm.",
         several_years: "nhiều năm", ndvi_model: "Lịch mô hình của cách đang làm", ndvi_meas: "Độ xanh vệ tinh đo được (NDVI)",
         as_h: "Giả định mô hình cân bằng nước &amp; giới hạn dữ liệu", sal_src: "Nguồn tháng mặn:", stress_src: "Nguồn năm hạn mặn:",
         stress_y: "Năm hạn mặn {y}:", ndvi_src: "Năm dùng cho NDVI:", disp_rule: "Cách hiển thị lịch:",
         baseline: "Mốc so sánh", no_thresh: "Chưa có ngưỡng chuẩn", sal_nm: "Mặn: chưa tính",
+        bare_n: "<b>{n}</b> tháng đất trống", bare_none: "Đất được che phủ cả năm", vs_base: "so với {id}",
+        details_k: "Phương án {id}", see_data_k: "Đối chiếu vệ tinh",
+        nav1s: "Ruộng", nav2s: "So sánh", nav3s: "Vệ tinh", nav4s: "Báo cáo", next: "Tiếp theo",
+        nav_foot: "NASA POWER · MODIS · GPM IMERG · SMAP · SRTM, 2015–2025", footer_method: "Cách tính &amp; nguồn", close: "Đóng",
+        step1_hint: "Câu trả lời ngắn trước. Chi tiết chỉ cách một lần chạm.",
+        whatif_long: "Giả định, không phải dự báo.",
         // static page text (English originals are in index.html)
-        tab_bentre: "Bến Tre (ĐBSCL)", tab_daklak: "Đắk Lắk (Tây Nguyên)", top_report: "Báo cáo", aria_region: "Chọn vùng canh tác", aria_intro: "Giới thiệu trang",
+        tab_bentre: "Bến Tre (ĐBSCL)", tab_daklak: "Đắk Lắk (Tây Nguyên)", aria_region: "Chọn vùng canh tác",
         nav1: "Ruộng của bạn hôm nay", nav2: "So sánh phương án", nav3: "Vệ tinh cho thấy gì", nav4: "Kế hoạch &amp; báo cáo",
         h1: "Cách luân canh nào ít tốn nước ngọt, giữ đất được che phủ và tránh được nước mặn?",
-        intro_sub: "Dựa trên dữ liệu NASA POWER, MODIS, GPM IMERG, SMAP và SRTM (2015–2025) cùng các nguồn khoa học Việt Nam đã kiểm chứng. Chọn vùng ở thanh trên cùng.",
-        role_farmers: "Nông dân", role_farmers_t: "Xem câu trả lời và các thẻ phương án.",
-        role_ext: "Cán bộ khuyến nông, nhà nghiên cứu", role_ext_t: "So sánh, thử thời tiết, tải CSV.",
-        role_sci: "Nhà khoa học", role_sci_t: "Công thức, nguồn và giới hạn ở Bước 4.",
+        intro_sub: "Dựa trên dữ liệu vệ tinh và khí tượng của NASA (2015–2025) cùng các nguồn khoa học Việt Nam đã kiểm chứng. Chọn vùng ở thanh trên cùng.",
         step1: "Bước 1", step1_t: "Ruộng của bạn hôm nay", weather_h: "Thử thời tiết",
         preset_today: "Hôm nay", preset_hot: "Khô nóng", preset_vhot: "Rất khô nóng",
         preset_hot_t: "Nhiệt độ +1,5 °C, mưa −20%. Kịch bản giả định, không phải dự báo.",
         preset_vhot_t: "Nhiệt độ +2,5 °C, mưa −35%. Kịch bản giả định, không phải dự báo.",
         adjust: "Chỉnh nhiệt độ và lượng mưa", temp: "Nhiệt độ", rain: "Lượng mưa", whatif: "Kịch bản giả định, không phải dự báo", reset: "Về khí hậu đo được",
         step2: "Bước 2", step2_t: "So sánh phương án",
-        step2_hint: "Số lớn là lượng nước ngọt phải bơm. Thanh màu so với cách đang làm. Tháng gạch đỏ là tháng nước mặn.",
+        step2_hint: "Số lớn là lượng nước ngọt phải bơm. Càng ít nước thì càng ít phải bơm. Tháng màu đỏ là tháng nước mặn.",
         rot_empty: "Chưa có dữ liệu khí tượng cho vùng này. Thả file vào <code>data/raw/power/&lt;vùng&gt;.csv</code> rồi tải lại trang.",
         step3: "Bước 3", step3_t: "Vệ tinh cho thấy gì",
-        step3_hint: "Dữ liệu NASA độc lập dùng để đối chiếu với mô hình. Mỗi ô có một kết luận; bấm \"Xem số liệu\" để xem con số và nguồn.",
+        step3_hint: "Mỗi ô là một bộ dữ liệu NASA và một kết luận, đã đối chiếu với mô hình.",
         step4: "Bước 4", step4_t: "Kế hoạch &amp; báo cáo",
-        step4_hint: "Báo cáo được ghép từ chính số liệu trên trang theo thời tiết bạn chọn. Không dùng AI tạo chữ. Mang theo khi hỏi cán bộ khuyến nông.",
-        btn_report: "Tạo báo cáo cho cả vùng", btn_print: "In báo cáo", btn_csv: "Tải số liệu (CSV)", btn_report_m: "Tạo báo cáo",
+        step4_hint: "Một trang để in hoặc gửi cho hợp tác xã. Ghép từ chính số liệu trên trang; không dùng AI tạo chữ.",
+        btn_report: "Tạo báo cáo cho cả vùng", btn_print: "In", btn_csv: "CSV", csv_done: "Đã tải",
         btn_csv_t: "Mỗi dòng là một vụ, một năm vụ hoặc một phép đối chiếu vệ tinh. 1 mm = 10 m³/ha.",
         expert_s: "Dành cho chuyên gia: dữ liệu và cách tính",
         chart_h: "Mưa và bốc thoát hơi ETo trung bình theo tháng (2015–2025)",
@@ -294,6 +301,7 @@ function cropKey(crop) {
     if (crop === null || crop === undefined) return "shrimp";
     return KNOWN_CROPS.includes(crop) ? crop : "other";
 }
+function ico(name) { return `<svg class="ico" aria-hidden="true"><use href="#i-${name}"/></svg>`; }
 function show(id, on) { const el = document.getElementById(id); if (el) el.hidden = !on; }
 function mShort(m) { return MONTHS[lang][m - 1]; }
 function mInitial(m) { return lang === "vi" ? String(m) : MONTHS.en[m - 1].charAt(0); }
@@ -332,6 +340,7 @@ function stratName(st) {
 function sText(st, f) { const v = viOf(st); return v && v[f] !== undefined && v[f] !== null ? v[f] : st[f]; }
 function evText(st, i) { const v = viOf(st); return (v && v.evidence_text && v.evidence_text[i]) || (st.evidence[i] || {}).text || ""; }
 function phLabel(ph) { return (lang === "vi" && ph.label_vi) || ph.label; }
+function vf(obj, f) { return obj ? (lang === "vi" && obj[f + "_vi"] !== undefined && obj[f + "_vi"] !== null ? obj[f + "_vi"] : obj[f]) : undefined; }
 function rText(data, f) { return lang === "vi" && data.vi && data.vi[f] !== undefined && data.vi[f] !== null ? data.vi[f] : data[f]; }
 function regionName() { return REGIONS_DATA[currentRegion].name; }
 function labelMap() {
@@ -353,9 +362,15 @@ function animateNums(root) {
     root.querySelectorAll(".num[data-k]").forEach(el => {
         const k = el.dataset.k, to = Number(el.dataset.v), d = Number(el.dataset.d) || 0;
         if (el.dataset.v === "" || Number.isNaN(to)) return;
-        const from = isNum(prevNums[k]) ? prevNums[k] : 0;
+        const known = isNum(prevNums[k]), from = known ? prevNums[k] : 0;
         prevNums[k] = to;
         if (REDUCED || Math.abs(to - from) < Math.pow(10, -d)) return;
+        if (known) { // value flash (interior.dev pattern): lift + tint in, hold 900 ms, then settle back
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                el.classList.add("flash");
+                setTimeout(() => el.classList.remove("flash"), 900); // timed from the add, so a late frame cannot leave it lit
+            }));
+        }
         const t0 = performance.now(), dur = 550;
         const step = now => {
             const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
@@ -380,8 +395,8 @@ document.addEventListener("DOMContentLoaded", () => {
     captureStaticText();
     document.querySelectorAll(".region-tab").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.region === currentRegion)));
     initControls();
-    initScrollUx();
     setLang(lang, false);
+    initNav();
     loadRegionData();
 });
 
@@ -391,13 +406,14 @@ function setLang(l, rerender = true) {
     document.documentElement.lang = lang;
     document.querySelectorAll("#langToggle button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
     applyStaticText();
+    requestAnimationFrame(updateGlides); // label widths change with the language
     document.getElementById("heroPlace").textContent = `${regionName()} · ${REGIONS_DATA[currentRegion].place[lang]}`;
     updateSliderLabels();
     renderStatusChips();
     const note = document.getElementById("reportLangNote");
     note.textContent = t("report_lang");
     note.hidden = !t("report_lang");
-    if (!reportReady) document.getElementById("chatOutput").textContent = t("report_idle");
+    if (reportReady) loadReport(); else resetReport(); // a built report follows the language
     if (!rerender) return;
     if (lastRotationData) renderAll();
     if (lastCrops) renderCropTable(lastCrops);
@@ -414,8 +430,10 @@ function initControls() {
             currentRegion = btn.dataset.region;
             selectedStrategy = null;
             selectedStrategyName = "";
-            openCards.clear();
+            closeDrawer(false);
             document.querySelectorAll(".region-tab").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+            updateGlides();
+            replayNext = true;
             baselineDeficits = {};
             loadRegionData();
         });
@@ -432,83 +450,183 @@ function initControls() {
         chip.addEventListener("click", () => { sTemp.value = chip.dataset.temp; sRain.value = chip.dataset.rain; onChange(); });
     });
 
-    document.getElementById("btnCsv").addEventListener("click", downloadCsv);
+    document.getElementById("btnCsv").addEventListener("click", e => {
+        if (!downloadCsv()) return;
+        const b = e.currentTarget; // short "downloaded" confirmation on the button itself
+        b.classList.add("done");
+        clearTimeout(b._t);
+        b._t = setTimeout(() => b.classList.remove("done"), 1800);
+    });
+    let glideRaf = 0;
+    window.addEventListener("resize", () => { cancelAnimationFrame(glideRaf); glideRaf = requestAnimationFrame(updateGlides); });
     document.getElementById("btnPrint").addEventListener("click", async () => {
         if (!reportReady) await loadReport();
         window.print();
     });
-    const wholeRegion = () => { selectedStrategy = null; selectedStrategyName = ""; loadReport(); };
-    document.getElementById("btnReport").addEventListener("click", wholeRegion);
-    document.getElementById("btnReportMobile").addEventListener("click", () => {
-        document.getElementById("reportSection").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" });
-        wholeRegion();
-    });
+    document.getElementById("btnReport").addEventListener("click", () => { selectedStrategy = null; selectedStrategyName = ""; loadReport(); });
 
     document.addEventListener("click", e => {
         const more = e.target.closest(".more-btn");
-        if (more) {
-            const host = more.closest(".rot-card, .ev-tile");
-            const open = !host.classList.contains("open");
-            host.classList.toggle("open", open);
-            more.setAttribute("aria-expanded", String(open));
-            more.textContent = t(open ? more.dataset.close : more.dataset.open);
-            if (host.dataset.strategyId) { if (open) openCards.add(host.dataset.strategyId); else openCards.delete(host.dataset.strategyId); }
-            return;
-        }
+        if (more) { openDrawer(more.closest(".rot-card, .ev-tile"), more); return; }
+        if (e.target.closest("[data-close-drawer]")) { closeDrawer(); return; }
         const rep = e.target.closest(".card-report-btn");
         if (rep) {
             selectedStrategy = rep.dataset.strategy;
             selectedStrategyName = rep.dataset.name;
-            document.getElementById("reportSection").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" });
+            closeDrawer(false);
+            goTo("#reportSection", true);
             loadReport();
             return;
         }
-        // An anchor into a closed <details> (expert section) opens it first
+        // In-page links switch screens (and open a closed <details> around the target)
         const a = e.target.closest('a[href^="#"]');
-        if (a && a.getAttribute("href").length > 1) {
-            const target = document.getElementById(a.getAttribute("href").slice(1));
-            if (target) {
-                const step = target.closest(".step");
-                if (step) step.classList.add("seen");
-                let d = target.tagName === "DETAILS" ? target : target.closest("details");
-                while (d) { d.open = true; d = d.parentElement && d.parentElement.closest("details"); }
-            }
+        if (a && a.getAttribute("href").length > 1) { e.preventDefault(); goTo(a.getAttribute("href"), true); }
+    });
+    document.addEventListener("click", e => {
+        document.querySelectorAll("details.tip[open]").forEach(tip => { if (!tip.contains(e.target)) tip.open = false; });
+    });
+    document.addEventListener("keydown", e => {
+        if (e.key === "Escape") document.querySelectorAll("details.tip[open]").forEach(tip => { tip.open = false; });
+        const d = document.getElementById("drawer");
+        if (d.hidden) return;
+        if (e.key === "Escape") { closeDrawer(); return; }
+        if (e.key === "Tab") { // keep focus inside the open panel
+            const f = [...d.querySelectorAll("button, a[href], [tabindex]:not([tabindex='-1'])")].filter(x => x.offsetParent !== null);
+            if (!f.length) return;
+            const first = f[0], last = f[f.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         }
     });
     document.getElementById("techSection").addEventListener("toggle", () => { if (climateChart) climateChart.resize(); });
 }
 
-function initScrollUx() {
-    const links = [...document.querySelectorAll("#stepNav a")];
-    const sections = links.map(a => document.getElementById(a.dataset.step)).filter(Boolean);
-    // Active pill = last step whose top is above 45% of the viewport (step 1 at the top of the page).
-    // Reveal: a step's cards fade in the first time its top enters the viewport.
-    let ticking = false;
-    const update = () => {
-        ticking = false;
-        const vh = window.innerHeight;
-        let active = sections[0];
-        sections.forEach(s => {
-            const top = s.getBoundingClientRect().top;
-            if (top < vh * 0.45) active = s;
-            if (!s.classList.contains("seen") && top < vh * 0.92) s.classList.add("seen");
-        });
-        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) active = sections[sections.length - 1];
-        links.forEach(a => {
-            const on = a.dataset.step === active.id;
-            a.classList.toggle("active", on);
-            if (on) a.setAttribute("aria-current", "step"); else a.removeAttribute("aria-current");
-        });
-    };
-    const schedule = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    if ("IntersectionObserver" in window) {
-        // Layout changes (cards expanding, data loading) also move sections: re-check when any crosses the viewport
-        const io = new IntersectionObserver(schedule, { rootMargin: "-45% 0px -54% 0px" });
-        sections.forEach(s => io.observe(s));
+// ==========================================================================
+// SCREENS: the side menu shows one step at a time; the URL hash keeps the place
+// ==========================================================================
+const STEPS = ["step1", "rotationsSection", "evidenceSection", "reportSection"];
+let currentStep = null, replayNext = false, settleTimer = 0;
+
+// A highlight that glides to the active item (side menu, region tabs, language)
+function glide(container, active) {
+    if (!container) return;
+    let g = container.querySelector(":scope > .glide");
+    if (!g) {
+        g = document.createElement("span");
+        g.className = "glide";
+        g.setAttribute("aria-hidden", "true");
+        container.prepend(g);
+        container.classList.add("has-glide");
     }
-    update();
+    if (!active || !active.offsetParent) { g.style.opacity = "0"; return; }
+    g.style.opacity = "1";
+    g.style.width = `${active.offsetWidth}px`;
+    g.style.height = `${active.offsetHeight}px`;
+    g.style.transform = `translate(${active.offsetLeft}px, ${active.offsetTop}px)`;
+    if (!g.dataset.ready) requestAnimationFrame(() => { g.dataset.ready = "1"; }); // no slide on first paint
+}
+function updateGlides() {
+    glide(document.getElementById("stepNav"), document.querySelector("#stepNav a.active"));
+    glide(document.querySelector(".region-tabs"), document.querySelector('.region-tab[aria-pressed="true"]'));
+    glide(document.getElementById("langToggle"), document.querySelector('#langToggle button[aria-pressed="true"]'));
+}
+
+// Replay the staggered entrance of a screen; "settled" then makes hover feedback instant again
+function replayStep(el) {
+    el.classList.remove("seen", "settled");
+    clearTimeout(settleTimer);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("seen")));
+    settleTimer = setTimeout(() => el.classList.add("settled"), REDUCED ? 0 : 1100);
+}
+
+function showStep(id) {
+    if (!STEPS.includes(id)) id = STEPS[0];
+    const changed = id !== currentStep;
+    const el = document.getElementById(id);
+    // Screens slide in from the side you are moving towards
+    if (changed) el.style.setProperty("--dir", currentStep ? Math.sign(STEPS.indexOf(id) - STEPS.indexOf(currentStep)) : 0);
+    currentStep = id;
+    STEPS.forEach(s => { document.getElementById(s).hidden = s !== id; });
+    document.querySelectorAll("#stepNav a[data-step]").forEach(a => {
+        const on = a.dataset.step === id;
+        a.classList.toggle("active", on);
+        if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    });
+    updateGlides();
+    if (!changed) return;
+    replayStep(el);
+    if (id === "reportSection" && climateChart) climateChart.resize();
+}
+
+// Go to a step, or to an element inside a step (opening any <details> around it)
+function goTo(hash, push) {
+    const target = hash && hash.length > 1 ? document.getElementById(hash.slice(1)) : null;
+    const step = target ? (STEPS.includes(target.id) ? target : target.closest(".step")) : null;
+    showStep(step ? step.id : STEPS[0]);
+    if (push && location.hash !== hash) history.pushState(null, "", hash);
+    if (target && target !== step) {
+        let d = target.tagName === "DETAILS" ? target : target.closest("details");
+        while (d) { d.open = true; d = d.parentElement && d.parentElement.closest("details"); }
+        requestAnimationFrame(() => target.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" }));
+    } else {
+        window.scrollTo({ top: 0, behavior: "auto" });
+    }
+}
+
+function initNav() {
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    window.addEventListener("popstate", () => goTo(location.hash, false));
+    goTo(location.hash, false);
+}
+
+// ==========================================================================
+// DETAIL PANEL: "Details" (option cards) and "See data" (evidence tiles)
+// ==========================================================================
+let drawerSrc = null, drawerReturn = null, drawerTimer = null;
+
+function fillDrawer(host) {
+    const isCard = !!host.dataset.strategyId;
+    document.getElementById("drawerKicker").textContent = isCard
+        ? t("details_k", { id: host.dataset.strategyId }) : (host.querySelector(".ev-kicker") || {}).textContent || t("see_data_k");
+    document.getElementById("drawerTitle").innerHTML = (host.querySelector(".rot-name, .ev-title") || {}).innerHTML || "";
+    const body = document.getElementById("drawerBody");
+    body.innerHTML = (host.querySelector(".more > div") || {}).innerHTML || "";
+    [...body.children].forEach((c, i) => c.style.setProperty("--k", Math.min(i, 10))); // staggered rise
+}
+
+function openDrawer(host, trigger) {
+    if (!host) return;
+    drawerSrc = host.dataset.strategyId ? { card: host.dataset.strategyId } : { tile: host.id };
+    drawerReturn = trigger || null;
+    fillDrawer(host);
+    const d = document.getElementById("drawer");
+    clearTimeout(drawerTimer);
+    d.hidden = false;
+    document.body.classList.add("drawer-open");
+    document.getElementById("drawerBody").scrollTop = 0;
+    requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add("show")));
+    document.getElementById("drawerClose").focus();
+}
+
+function closeDrawer(restoreFocus = true) {
+    const d = document.getElementById("drawer");
+    if (d.hidden) return;
+    d.classList.remove("show");
+    document.body.classList.remove("drawer-open");
+    drawerSrc = null;
+    drawerTimer = setTimeout(() => { d.hidden = true; }, REDUCED ? 0 : 280);
+    if (restoreFocus && drawerReturn && document.contains(drawerReturn)) drawerReturn.focus();
+    drawerReturn = null;
+}
+
+// Re-render (language, weather, region) keeps an open panel in sync, or closes it if its source is gone
+function refreshDrawer() {
+    if (!drawerSrc) return;
+    const host = drawerSrc.card
+        ? document.querySelector(`.rot-card[data-strategy-id="${CSS.escape(drawerSrc.card)}"]`)
+        : document.getElementById(drawerSrc.tile);
+    if (!host || host.hidden) { closeDrawer(false); return; }
+    fillDrawer(host);
 }
 
 function updateSliderLabels() {
@@ -627,7 +745,7 @@ async function loadRegionData() {
         show("chartWrapper", false); show("climateEmpty", true);
         show("rotationsContent", false); show("rotationsEmpty", true);
         show("cropTableWrapper", false); show("evaluateEmpty", true);
-        document.getElementById("heroTitle").textContent = t("no_weather");
+        Object.assign(document.getElementById("heroTitle"), { textContent: t("no_weather"), _raw: null });
         document.getElementById("heroBody").innerHTML = "";
         return;
     }
@@ -712,6 +830,8 @@ function renderAll() {
     renderNdviStrip(data, strategies);
     renderAssumptionsBox(data);
     updateReportContext();
+    refreshDrawer();
+    if (replayNext && currentStep) { replayNext = false; replayStep(document.getElementById(currentStep)); } // new region: replay the entrance
 }
 
 // ==========================================================================
@@ -736,49 +856,59 @@ function renderHero(data, strategies) {
     const titleEl = document.getElementById("heroTitle");
     const bodyEl = document.getElementById("heroBody");
     const base = strategies.find(s => s.is_existing);
-    if (!base || !isNum(base.annual_deficit_mm)) { titleEl.textContent = t("no_base"); bodyEl.innerHTML = ""; return; }
+    if (!base || !isNum(base.annual_deficit_mm)) { titleEl.textContent = t("no_base"); titleEl._raw = null; bodyEl.innerHTML = ""; return; }
 
     const alts = strategies.filter(s => !s.is_existing && !s.partial && isNum(s.annual_deficit_mm))
         .sort((a, b) => a.annual_deficit_mm - b.annual_deficit_mm);
     const best = alts[0];
     const ero = data.cross_checks && data.cross_checks.erosion;
     const baseDef = base.annual_deficit_mm;
-    let answer = "", saving = null;
+    let answer = "", short = "", saving = null;
     if (best && best.annual_deficit_mm < baseDef) {
         saving = Math.round((baseDef - best.annual_deficit_mm) / baseDef * 100);
+        short = t("ans_short_better", { best: stratName(best), pct: saving });
         answer = t("ans_better", { region: regionName(), best: stratName(best), pct: saving, base: stratName(base), years: yearsCompare(best, base, true) });
     } else if (best) {
         const more = Math.round((best.annual_deficit_mm - baseDef) / baseDef * 100);
         const eroTxt = ero && ero.available && ero.compared_strategy === best.id ? t("ans_ero", { pct: fmt(ero.reduction_pct, 0) }) : "";
+        short = t("ans_short_none");
         answer = t("ans_none", { region: regionName(), base: stratName(base), alt: stratName(best), pct: more,
             months: base.water_full_year === false && (base.water_months || []).length ? t("ans_months", { m: monthSpans(base.water_months) }) : "",
             years: yearsCompare(best, base, false), ero: eroTxt });
     }
-    titleEl.innerHTML = answer || esc(stratName(base));
+    const html = short || esc(stratName(base));
+    if (titleEl._raw !== html) { // blur-in when the answer changes (region, weather, language)
+        titleEl._raw = html;
+        titleEl.innerHTML = html;
+        titleEl.classList.remove("swap"); void titleEl.offsetWidth; titleEl.classList.add("swap");
+    }
 
     // Tiles: water today, best saving (or extra water), salt months / slope / bare months
     const scenOn = parseFloat(document.getElementById("sliderTemp").value) !== 0 || parseInt(document.getElementById("sliderRain").value, 10) !== 0;
     const when = base.water_full_year === false && (base.water_months || []).length ? t("when_in", { m: monthSpans(base.water_months) }) : t("when_year");
-    const tiles = [`<div class="tile"><div class="tile-num">${num("w-" + currentRegion, baseDef, 0, 10)} <small>m³/ha</small></div>
-        <div class="tile-lbl">${t(scenOn ? "tile_water_scen" : "tile_water")}</div><div class="tile-sub">${t("tile_water_sub", { v: fmt(baseDef), when })}</div></div>`];
+    let ti = 0;
+    const tile = (cls, icCls, icon, lbl, numHtml, sub, extra = "") => `<div class="tile reveal${cls ? " " + cls : ""}" style="--i:${ti++}">
+        <div class="tile-head"><span class="ic${icCls ? " " + icCls : ""}">${ico(icon)}</span><span class="tile-lbl">${lbl}</span></div>
+        <div class="tile-num">${numHtml}</div><div class="tile-sub">${sub}</div>${extra}</div>`;
+    const tiles = [tile("", "", "drop", t(scenOn ? "tile_water_scen" : "tile_water"),
+        `${num("w-" + currentRegion, baseDef, 0, 10)} <small>m³/ha</small>`, t("tile_water_sub", { v: fmt(baseDef), when }))];
     if (saving !== null) {
-        tiles.push(`<div class="tile good"><div class="tile-num">−${num("s-" + currentRegion, saving)}%</div>
-            <div class="tile-lbl">${t("tile_best")}</div><div class="tile-sub">${t("tile_with", { name: stratName(best) })}</div></div>`);
+        tiles.push(tile("good", "ic-good", "down", t("tile_best"), `−${num("s-" + currentRegion, saving)}%`, t("tile_with", { name: stratName(best) })));
     } else if (best) {
         const more = Math.round((best.annual_deficit_mm - baseDef) / baseDef * 100);
-        tiles.push(`<div class="tile"><div class="tile-num">+${num("s-" + currentRegion, more)}%</div>
-            <div class="tile-lbl">${t("tile_more")}</div><div class="tile-sub">${stratName(best)}</div></div>`);
+        tiles.push(tile("", "ic-heat", "up", t("tile_more"), `+${num("s-" + currentRegion, more)}%`, stratName(best)));
     }
     const sal = (data.salinity_months || []).map(Number);
     if (sal.length) {
-        tiles.push(`<div class="tile sal"><div class="tile-num">${monthSpans(sal)}</div>
-            <div class="tile-lbl">${t("tile_sal")}</div><div class="tile-sub">${t("tile_sal_sub", { n: sal.length })}</div></div>`);
+        let dots = "";
+        for (let m = 1; m <= 12; m++) dots += `<span class="${sal.includes(m) ? "on" : ""}" style="--m:${m}" title="${MONTHS_LONG[lang][m - 1]}${sal.includes(m) ? t("sal_tip") : ""}"><i></i>${mInitial(m)}</span>`;
+        tiles.push(tile("sal", "ic-sal", "waves", t("tile_sal"), monthSpans(sal), t("tile_sal_sub", { n: sal.length }),
+            `<div class="sal-dots" role="img" aria-label="${esc(t("tile_sal") + ": " + monthSpans(sal))}">${dots}</div>`));
     } else if (ero && ero.available && isNum(ero.slope_deg_p50)) {
-        tiles.push(`<div class="tile"><div class="tile-num">${fixed(ero.slope_deg_p50, 1)}°</div>
-            <div class="tile-lbl">${t("tile_slope")}</div><div class="tile-sub">${t("tile_slope_sub", { p90: fixed(ero.slope_deg_p90, 1), share: Math.round(ero.wet_season_rain_share * 100), m: monthSpans(ero.wet_season_months || []) })}</div></div>`);
+        tiles.push(tile("", "ic-earth", "mountain", t("tile_slope"), `${fixed(ero.slope_deg_p50, 1)}°`,
+            t("tile_slope_sub", { p90: fixed(ero.slope_deg_p90, 1), share: Math.round(ero.wet_season_rain_share * 100), m: monthSpans(ero.wet_season_months || []) })));
     } else {
-        tiles.push(`<div class="tile"><div class="tile-num">${(base.bare_months || []).length} <small>${t("months")}</small></div>
-            <div class="tile-lbl">${t("tile_bare")}</div><div class="tile-sub">${t("tile_bare_sub")}</div></div>`);
+        tiles.push(tile("", "ic-earth", "layers", t("tile_bare"), `${(base.bare_months || []).length} <small>${t("months")}</small>`, t("tile_bare_sub")));
     }
 
     let scen = "";
@@ -789,7 +919,8 @@ function renderHero(data, strategies) {
         const d = Math.round((baseDef - b0) * 10);
         scen = `<p class="hero-scen">${t(d >= 0 ? "scen_more" : "scen_less", { w: scenarioText(tv, r), d: fmt(Math.abs(d)) })}</p>`;
     }
-    bodyEl.innerHTML = `<div class="tiles">${tiles.join("")}</div>${scen}<p class="hero-note">${t("ans_note")}</p>`;
+    bodyEl.innerHTML = `<div class="tiles">${tiles.join("")}</div>${scen}`;
+    document.getElementById("heroWhy").innerHTML = `${answer ? `<p>${answer}</p>` : ""}<p class="muted">${t("ans_note")}</p>`;
     animateNums(bodyEl);
 }
 
@@ -834,12 +965,12 @@ function yearStrip(st, stressYears) {
     if (!yrs.length) return "";
     const max = Math.max(0, ...yrs.map(y => y.deficit_mm).filter(isNum));
     const stress = new Map((stressYears || []).map(s => [stressKey(s), s]));
-    const bars = yrs.map(y => {
+    const bars = yrs.map((y, yi) => {
         const s = stress.get(stressKey(y));
         const h = isNum(y.deficit_mm) && max > 0 ? Math.max(6, y.deficit_mm / max * 100) : 0;
         let tip = `${y.label}: ${isNum(y.deficit_mm) ? `${m3(y.deficit_mm)} m³/ha` : t("no_data")}`;
         if (s) tip += ` · ${(lang === "vi" && s.event_vi) || s.event} (${s.source}${s.verified === false ? "; " + t("nyv") : ""})`;
-        return `<span class="yr-bar${s ? " stress" : ""}" style="height:${h.toFixed(0)}%" title="${esc(tip)}"></span>`;
+        return `<span class="yr-bar${s ? " stress" : ""}" style="height:${h.toFixed(0)}%;--y:${yi}" title="${esc(tip)}"></span>`;
     }).join("");
     return `<h4>${t("h_years")}</h4>
         <div class="yr-strip" role="img" aria-label="${esc(t("yr_aria", { a: yrs[0].label, b: yrs[yrs.length - 1].label }))}">${bars}</div>
@@ -862,27 +993,29 @@ function renderGanttTimeline(st, salMonths, usedCrops) {
         if (last && last.key === key) last.months.push(mc);
         else blocks.push({ key, bare: !!mc.bare, label: mc.phase_label, months: [mc] });
     });
+    let col = 0;
     const segs = blocks.map(b => {
         const span = b.months.length;
-        const style = `grid-column: span ${span};`;
-        if (b.bare) return `<div class="gantt-seg bare" style="${style}" title="${esc(t("bare_tip"))}">${span >= 3 ? t("bare") : ""}</div>`;
+        const style = `grid-column: span ${span}; --c:${col}`; // --c staggers the left-to-right draw-in
+        col += span;
+        if (b.bare) return `<div class="gantt-seg bare" style="${style}" title="${esc(t("bare_tip"))}">${span >= 2 ? t("bare") : ""}</div>`;
         const ck = cropByLabel[b.label] || "other";
         usedCrops.add(ck);
         const heat = b.months.some(mc => isNum(mc.heat_ratio) && mc.heat_ratio > 0) ? `<span class="gantt-heat-dot" title="${esc(t("heat_tip"))}"></span>` : "";
-        return `<div class="gantt-seg crop-${ck}" style="${style}" title="${esc(nameByLabel[b.label] || b.label)}">${heat}${span >= 3 ? t("crop_" + ck) : ""}</div>`;
+        return `<div class="gantt-seg crop-${ck}" style="${style}" title="${esc(nameByLabel[b.label] || b.label)}">${heat}${span >= 2 ? t("crop_" + ck) : ""}</div>`;
     }).join("");
     return `<div class="cal-scroll"><div class="gantt"><div class="gantt-head">${head}</div><div class="gantt-bar">${segs}</div></div></div>`;
 }
 
 function erosionForCard(st, ero) {
     if (!ero || !ero.available || st.id !== ero.compared_strategy) return "";
-    const lbl = ero.c_labels || {};
+    const lbl = vf(ero, "c_labels") || {};
     const site = isNum(ero.slope_deg_p50) ? `<p class="muted">${t("ero_site", { a: fixed(ero.slope_deg_p50, 1), b: fixed(ero.slope_deg_p90, 1),
         s: Math.round(ero.wet_season_rain_share * 100), m: monthSpans(ero.wet_season_months || []) })}</p>` : "";
     return `<div class="sub-block"><h4>${t("ero_h")}</h4>
-        <p title="${esc((ero.caveats || []).join(" "))}">${t("ero_line", { p: fmt(ero.reduction_pct, 0), v: ero.verified === false ? "; " + t("nyv") : "" })}</p>${site}
+        <p title="${esc((vf(ero, "caveats") || []).join(" "))}">${t("ero_line", { p: fmt(ero.reduction_pct, 0), v: ero.verified === false ? "; " + t("nyv") : "" })}</p>${site}
         <ul class="src-list"><li>${t("ero_c", { cb: ero.c_baseline, lb: lbl[ero.baseline_strategy] || ero.baseline_strategy, cc: ero.c_compared, lc: lbl[ero.compared_strategy] || ero.compared_strategy, r: ero.soil_loss_ratio })}</li>
-        ${(ero.caveats || []).map(c => `<li>${c}</li>`).join("")}
+        ${(vf(ero, "caveats") || []).map(c => `<li>${c}</li>`).join("")}
         <li>${ero.c_source}${ero.verified === false ? " - " + t("nyv") : ""}</li>${ero.slope_source ? `<li>${ero.slope_source}</li>` : ""}${ero.rain_source ? `<li>${ero.rain_source}</li>` : ""}</ul></div>`;
 }
 
@@ -896,18 +1029,30 @@ function renderStrategyCards(data, strategies) {
     const maxDef = Math.max(0, ...strategies.map(s => s.annual_deficit_mm).filter(isNum));
     const pctW = v => (isNum(v) && maxDef > 0 ? (v / maxDef * 100).toFixed(1) : "0");
 
+    // The lowest-water complete option that beats current practice gets the green border
+    const bestAlt = strategies.filter(s => !s.is_existing && !s.partial && isNum(s.annual_deficit_mm) && base && isNum(base.annual_deficit_mm) && s.annual_deficit_mm < base.annual_deficit_mm)
+        .sort((a, b) => a.annual_deficit_mm - b.annual_deficit_mm)[0];
+
     grid.innerHTML = strategies.map((st, i) => {
         const def = st.annual_deficit_mm;
         const bareN = (st.bare_months || []).length;
-        let badge = "", rel = "";
+        let badge = "", rel = "", relCls = "", relIco = "";
         const hasBase = base && isNum(def) && isNum(base.annual_deficit_mm) && base.annual_deficit_mm > 0;
         const pct = hasBase ? Math.round((base.annual_deficit_mm - def) / base.annual_deficit_mm * 100) : null;
-        if (st.is_existing) badge = `<span class="badge current">${t("badge_current")}</span>`;
-        else if (st.partial) badge = `<span class="badge neutral">${t("badge_shrimp")}</span>`;
-        else if (pct > 0) badge = `<span class="badge saved">${t("badge_saves", { p: pct })}</span>`;
-        else if (pct < 0) badge = `<span class="badge neutral">${t("badge_more", { p: -pct })}</span>`;
+        if (st.is_existing) badge = `<span class="badge current">${ico("pin")}${t("badge_current")}</span>`;
+        else if (st.partial) badge = `<span class="badge neutral">${ico("info")}${t("badge_shrimp")}</span>`;
+        else if (pct > 0) badge = `<span class="badge saved">${ico("down")}${t("badge_saves", { p: pct })}</span>`;
+        else if (pct < 0) badge = `<span class="badge neutral">${ico("up")}${t("badge_more", { p: -pct })}</span>`;
         if (st.is_existing) rel = t("rel_base");
-        else if (pct !== null) rel = pct > 0 ? t("rel_less", { p: pct }) : pct < 0 ? t("rel_more", { p: -pct }) : t("rel_same");
+        else if (pct !== null) {
+            rel = pct > 0 ? t("rel_less", { p: pct }) : pct < 0 ? t("rel_more", { p: -pct }) : t("rel_same");
+            relCls = pct > 0 ? " good" : pct < 0 ? " more" : "";
+            relIco = pct > 0 ? ico("down") : pct < 0 ? ico("up") : "";
+        }
+        const cmp = `<div class="cmp" role="img" aria-label="${esc(rel)}"><span>${esc(st.id)}</span><div class="cmp-bar"><span style="width:${pctW(def)}%"></span></div>${base && !st.is_existing
+            ? `<span>${esc(base.id)}</span><div class="cmp-bar base"><span style="width:${pctW(base.annual_deficit_mm)}%"></span></div>` : ""}</div>`;
+        const relLine = st.is_existing ? "" : `<p class="rel-lbl${relCls}">${relIco}${rel}</p>`; // the badge already says "current"
+        const calLbl = `<p class="cal-lbl">${bareN ? t("bare_n", { n: bareN }) : t("bare_none")}</p>`;
 
         let delta = "";
         const b0 = baselineDeficits[st.id];
@@ -916,7 +1061,6 @@ function renderStrategyCards(data, strategies) {
             delta = `<span class="delta ${dm > 0 ? "up" : "down"}">(${dm > 0 ? "+" : "−"}${fmt(Math.abs(dm))} m³)</span>`;
         }
         const benefits = sText(st, "benefits") || [], risks = sText(st, "risks") || [], gaps = sText(st, "info_gaps") || [];
-        const top = [benefits[0] ? `<li class="good-item">${benefits[0]}</li>` : "", risks[0] ? `<li class="risk-item">${risks[0]}</li>` : ""].join("");
         const evidence = (st.evidence || []).map((ev, k) =>
             `<li>${evText(st, k)} <span class="muted">(${ev.source}${ev.verified === false ? " - " + t("nyv") : ""})</span></li>`).join("");
         const calc = (st.phases || []).map(ph => {
@@ -928,34 +1072,34 @@ function renderStrategyCards(data, strategies) {
         }).join("");
         const lowRange = isNum(st.annual_deficit_low_mm) && isNum(def) && def - st.annual_deficit_low_mm >= 1 ? `<p class="muted">${t("low_range", { v: m3(st.annual_deficit_low_mm) })}</p>` : "";
         const note = sText(st, "note");
-        const isOpen = openCards.has(st.id);
-        const list = (h, arr, cls) => (arr.length ? `<h4>${h}</h4><ul class="bullet-list">${arr.map(x => `<li class="${cls}">${x}</li>`).join("")}</ul>` : "");
+        const list = (h, arr, cls) => (arr.length ? `<div><h4>${h}</h4><ul class="bullet-list">${arr.map(x => `<li class="${cls}">${x}</li>`).join("")}</ul></div>` : "");
+        const water = `<div class="metric-val">${num("d-" + currentRegion + st.id, def, 0, 10)} <small>m³/ha</small>${delta}</div>
+            <div class="metric-lbl">${waterLabel(st)}${st.partial ? ` · ${t("shrimp_nm")}` : ""} · ${t("per1000", { v: fmt(def) })}</div>`;
+        const waterFace = `<div class="metric-val">${num("d-" + currentRegion + st.id, def, 0, 10)} <small>m³/ha</small>${delta}</div>
+            <div class="metric-lbl">${waterLabel(st)}</div>`;
 
         return `
-        <article class="rot-card reveal${st.is_existing ? " is-baseline" : ""}${isOpen ? " open" : ""}" data-strategy-id="${esc(st.id)}" style="--i:${i}">
-            <div class="rot-top">${badge}<h3 class="rot-title">${stratName(st)}</h3></div>
-            <div class="rot-metrics">
-                <div>
-                    <div class="metric-val">${num("d-" + currentRegion + st.id, def, 0, 10)} <small>m³/ha</small>${delta}</div>
-                    <div class="metric-lbl">${waterLabel(st)}${st.partial ? ` · ${t("shrimp_nm")}` : ""}</div>
-                    <div class="metric-sub">${t("per1000", { v: fmt(def) })}</div>
-                </div>
-                <div class="bare-col"><div class="metric-val">${bareN}</div><div class="metric-lbl">${t("bare_lbl")}</div></div>
-            </div>
-            <div class="rel"><div class="rel-bar" role="img" aria-label="${esc(rel)}"><span style="width:${pctW(def)}%"></span>${base && !st.is_existing ? `<i style="left:${pctW(base.annual_deficit_mm)}%"></i>` : ""}</div><span class="rel-lbl">${rel}</span></div>
-            ${yearLine(st)}
+        <article class="rot-card reveal${st.is_existing ? " is-baseline" : ""}${bestAlt && bestAlt.id === st.id ? " is-best" : ""}" data-strategy-id="${esc(st.id)}" style="--i:${i}">
+            <div class="rot-top">${badge}<h3 class="rot-title"><span class="rot-id">${esc(st.id)}</span><span class="rot-name">${stratName(st)}</span></h3></div>
+            <div>${waterFace}</div>
+            ${cmp}
+            ${relLine}
+            ${calLbl}
             ${renderGanttTimeline(st, salMonths, usedCrops)}
-            ${top ? `<ul class="bullet-list top">${top}</ul>` : ""}
-            <button type="button" class="more-btn" aria-expanded="${isOpen}" data-open="details" data-close="hide">${t(isOpen ? "hide" : "details")}</button>
+            <button type="button" class="more-btn" aria-haspopup="dialog">${t("details")}${ico("chev")}</button>
             <div class="more"><div>
+                <div>${water}</div>
+                ${cmp}
+                ${relLine}
+                ${yearLine(st)}
+                ${calLbl}
+                ${renderGanttTimeline(st, salMonths, new Set())}
                 ${yearStrip(st, stressYears)}
                 ${lowRange}
                 ${plainLine(st, base)}
                 ${note ? `<p class="science-note${st.partial ? " shrimp" : ""}">${note}</p>` : ""}
                 ${erosionForCard(st, erosion)}
-                ${list(t("h_benefits"), benefits, "good-item")}
-                ${list(t("h_risks"), risks, "risk-item")}
-                ${list(t("h_gaps"), gaps, "gap-item")}
+                <div class="bri">${list(t("h_benefits"), benefits, "good-item")}${list(t("h_risks"), risks, "risk-item")}${list(t("h_gaps"), gaps, "gap-item")}</div>
                 ${evidence ? `<h4>${t("h_sources")}</h4><ul class="src-list">${evidence}</ul>` : ""}
                 ${calc ? `<h4>${t("h_calc")}</h4><ul class="src-list">${calc}</ul>` : ""}
                 ${st.partial ? `<p class="muted">${t("shrimp_total")}</p>` : ""}
@@ -985,15 +1129,18 @@ function renderCrossChecks(data) {
     updateCrossChips(data);
 }
 
+const EV_ICONS = { sowingCheck: ["sprout", "ic-good"], rainCheck: ["rain", ""], smapCard: ["layers", "ic-earth"], erosionCheck: ["mountain", "ic-earth"] };
 function evTile(el, kicker, title, take, sub, body) {
-    const open = el.classList.contains("open");
-    el.innerHTML = `<span class="ev-kicker">${kicker}</span><h3 class="ev-title">${title}</h3><p class="ev-take">${take}</p>${sub || ""}
-        <button type="button" class="more-btn" aria-expanded="${open}" data-open="see_data" data-close="hide_data">${t(open ? "hide_data" : "see_data")}</button>
-        <div class="more"><div>${body}</div></div>`;
+    const [icon, icCls] = EV_ICONS[el.id] || ["sat", ""];
+    el.innerHTML = `<div class="ev-top"><span class="ic ${icCls}">${ico(icon)}</span><span class="ev-kicker">${kicker}</span></div>
+        <h3 class="ev-title">${title}</h3><p class="ev-take">${take}</p>
+        <button type="button" class="more-btn link" aria-haspopup="dialog">${t("see_data")}${ico("chev")}</button>
+        <div class="more"><div>${sub || ""}${body}</div></div>`;
     el.classList.add("reveal");
+    el.style.setProperty("--i", Object.keys(EV_ICONS).indexOf(el.id));
     el.hidden = false;
 }
-function hideTile(el) { el.hidden = true; el.innerHTML = ""; el.classList.remove("open"); }
+function hideTile(el) { el.hidden = true; el.innerHTML = ""; }
 
 function renderSowing(data) {
     const el = document.getElementById("sowingCheck");
@@ -1024,10 +1171,10 @@ function renderSowing(data) {
     const gt = (os.ground_truth_checks || []).map(g => {
         const diff = Number(g.difference_days);
         const rel = !isNum(g.difference_days) ? "" : diff === 0 ? t("d_same") : t(diff < 0 ? "d_earlier" : "d_later", { n: fmt(Math.abs(diff)) });
-        return `<p class="ev-sub" title="${esc(g.text)}">${t("sow_gt", { r: `${g.approximate ? "~" : ""}${fmtDate(g.date)}`, s: g.detected_date ? fmtDate(g.detected_date) : t("not_detected"), rel })}
+        return `<p class="ev-sub" title="${esc(vf(g, "text"))}">${t("sow_gt", { r: `${g.approximate ? "~" : ""}${fmtDate(g.date)}`, s: g.detected_date ? fmtDate(g.detected_date) : t("not_detected"), rel })}
             <span class="muted">${g.source}${g.verified === false ? "; " + t("nyv") : ""}</span></p>`;
     }).join("");
-    const clouds = low.length ? `<p class="ev-sub warn">${t("sow_clouds", { e: expected, n: low.length, m: spy.length })}</p>` : "";
+    const clouds = low.length ? `<p class="ev-sub warn">${ico("warn")}<span>${t("sow_clouds", { e: expected, n: low.length, m: spy.length })}</span></p>` : "";
     const years = spy.map(([y, n]) => `<span class="sow-yr${Number(n) < expected ? " low" : ""}">${y}: <b>${n}</b></span>`).join("");
     const gap = low.length ? `<p class="muted">${t("sow_gap", { n: low.length, m: spy.length, e: expected, none: none.length ? t("sow_gap_none", { y: none.join(t("and")) }) : "" })}</p>` : "";
     const nUn = Number(os.n_unmatched) || 0;
@@ -1037,12 +1184,12 @@ function renderSowing(data) {
         : `<tr><td>${fmtDate(e.date)}</td><td class="muted">${t("sow_unm_row", { d: fmt(os.max_offset_days) })}</td><td class="num">${t("na")}</td></tr>`).join("");
     const body = `<ul class="src-list">${lines.join("")}</ul>
         <div class="sow-years"><span>${t("sow_years")}</span>${years}</div>${gap}${unmatched}
-        ${os.expected_error ? `<p class="muted">${t("exp_err")} ${os.expected_error}</p>` : ""}
+        ${os.expected_error ? `<p class="muted">${t("exp_err")} ${vf(os, "expected_error")}</p>` : ""}
         <div class="table-scroll"><table class="table-clean xc-table"><thead><tr><th>${t("th_detected")}</th><th>${t("th_season")}</th><th class="num">${t("th_vsmodel")}</th></tr></thead><tbody>${events}</tbody></table></div>
-        <p><strong>${t("method")}</strong> ${os.method || ""} <span class="muted">(${os.method_source || ""})</span></p>
-        ${os.assumptions ? `<p><strong>${t("assumptions")}</strong> ${os.assumptions}</p>` : ""}
+        <p><strong>${t("method")}</strong> ${vf(os, "method") || ""} <span class="muted">(${os.method_source || ""})</span></p>
+        ${os.assumptions ? `<p><strong>${t("assumptions")}</strong> ${vf(os, "assumptions")}</p>` : ""}
         <p><strong>${t("data")}</strong> ${os.source || ""}${isNum(os.n_composites_used) ? t("images_used", { n: fmt(os.n_composites_used) }) : ""}.</p>
-        ${(os.ground_truth_checks || []).map(g => `<p><strong>${t("ground")}</strong> ${g.text} <span class="muted">(${g.source})</span></p>`).join("")}`;
+        ${(os.ground_truth_checks || []).map(g => `<p><strong>${t("ground")}</strong> ${vf(g, "text")} <span class="muted">(${g.source})</span></p>`).join("")}`;
     evTile(el, t("ev_sow_k"), t("ev_sow_t"), take, gt + clouds, body);
 }
 
@@ -1109,9 +1256,9 @@ function renderErosionTile(data) {
     const take = t("ero_take", { p: fmt(ero.reduction_pct, 0), v: ero.verified === false ? "; " + t("nyv") : "" });
     const sub = isNum(ero.slope_deg_p50) ? `<p class="ev-sub">${t("ero_take2", { a: fixed(ero.slope_deg_p50, 1), b: fixed(ero.slope_deg_p90, 1),
         s: Math.round(ero.wet_season_rain_share * 100), m: monthSpans(ero.wet_season_months || []) })}</p>` : "";
-    const lbl = ero.c_labels || {};
+    const lbl = vf(ero, "c_labels") || {};
     const body = `<ul class="src-list"><li>${t("ero_c", { cb: ero.c_baseline, lb: lbl[ero.baseline_strategy] || ero.baseline_strategy, cc: ero.c_compared, lc: lbl[ero.compared_strategy] || ero.compared_strategy, r: ero.soil_loss_ratio })}</li>
-        ${(ero.caveats || []).map(c => `<li>${c}</li>`).join("")}</ul>
+        ${(vf(ero, "caveats") || []).map(c => `<li>${c}</li>`).join("")}</ul>
         <ul class="src-list"><li>${ero.c_source}${ero.verified === false ? " - " + t("nyv") : ""}</li>${ero.slope_source ? `<li>${ero.slope_source}</li>` : ""}${ero.rain_source ? `<li>${ero.rain_source}</li>` : ""}</ul>`;
     evTile(el, t("ev_ero_k"), t("ev_ero_t"), take, sub, body);
 }
@@ -1202,7 +1349,7 @@ const CSV_COLUMNS = ["row_type", "region", "delta_temp_c", "delta_rain_pct", "st
     "obs_date", "obs_month", "obs_value", "obs_value2", "obs_unit", "obs_source"];
 
 function downloadCsv() {
-    if (!lastRotations) return;
+    if (!lastRotations) return false;
     const tv = parseFloat(document.getElementById("sliderTemp").value);
     const r = parseInt(document.getElementById("sliderRain").value, 10);
     const data = lastRotationData || {};
@@ -1258,6 +1405,7 @@ function downloadCsv() {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    return true;
 }
 
 // ==========================================================================
@@ -1265,7 +1413,9 @@ function downloadCsv() {
 // ==========================================================================
 function resetReport() {
     reportReady = false;
-    document.getElementById("chatOutput").textContent = t("report_idle");
+    const out = document.getElementById("chatOutput");
+    out.textContent = t("report_idle");
+    out.classList.add("idle");
 }
 
 function updateReportContext() {
@@ -1281,15 +1431,18 @@ async function loadReport() {
     reportReady = false;
     updateReportContext();
     const outputEl = document.getElementById("chatOutput");
-    outputEl.innerHTML = `<em>${t("computing")}</em>`;
+    outputEl.classList.remove("idle", "fresh");
+    outputEl.innerHTML = `<p class="muted" role="status">${t("computing")}</p><span class="skel skel-line"></span><span class="skel skel-line"></span><span class="skel skel-line short"></span>`;
     try {
         const res = await fetch("/api/advise", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...JSON.parse(scenarioBody()), strategy_id: selectedStrategy })
+            body: JSON.stringify({ ...JSON.parse(scenarioBody()), strategy_id: selectedStrategy, lang })
         });
         if (!res.ok) { outputEl.innerHTML = `<span class="txt-bad">${t("report_err", { c: res.status })}</span>`; return; }
         outputEl.innerHTML = renderSimpleMarkdown((await res.json()).markdown);
+        [...outputEl.children].forEach((c, i) => c.style.setProperty("--k", Math.min(i, 16)));
+        outputEl.classList.add("fresh"); // report blocks rise in one after another
         reportReady = true;
     } catch (e) {
         outputEl.innerHTML = `<span class="txt-bad">${t("conn_err", { m: esc(e.message) })}</span>`;
