@@ -148,8 +148,8 @@ colors:
   text: '#14261b' # dark green ink for reading text
   muted: '#5e6560' # grey for secondary labels and captions
   primary: '#15803d' # agricultural green (links, focus, best-option border)
-  primary-ink: '#14532d' # dark green: active menu item, buttons, step icons
-  primary-light: '#e4f2dc' # light green: answer panel, Details buttons
+  primary-ink: '#14532d' # dark green: buttons, step icons, logo
+  primary-light: '#e4f2dc' # light green: active menu item, answer panel, Details buttons
   mark: '#fcd977' # yellow marker for key phrases and step number dots
 ```
 
@@ -176,7 +176,7 @@ typography:
 ```
 
 - **Mandatory tabular nums**: every measured value (`m³/ha`, `mm`, `ETo`, `ETc`, `NDVI`, temperature, rainfall, crop table) **MUST** use `font-variant-numeric: tabular-nums`. This keeps the layout from jittering when users drag the weather-scenario sliders.
-- **Type scale**: intro `h1` `30px`, step title `26px`, answer sentence `26px`, card title `19px`, large metrics `34px`, body `15px` (smaller on phones). System fonts only.
+- **Type scale**: step title `26px` (Step 1 title is the page `h1`), one-line answer `28px`, card title `19px`, large metrics `34px`, body `15px` (smaller on phones). System fonts only.
 
 ---
 
@@ -193,28 +193,30 @@ The app is **farmer-first with progressive disclosure** and shows **one screen p
 
 ### A. Top bar (`.topbar`), side menu (`#stepNav`) and screens
 - Top bar `64px`, fixed while scrolling: round logo + `AERO-AGRI`, region segmented control with a line icon (`Bến Tre (Mekong Delta)` | `Đắk Lắk (Central Highlands)`), `EN | VI` toggle (`#langToggle`). No extra report button: the menu already reaches every step.
-- Side menu `236px`, fixed under the top bar: 4 items (icon with step number, `Step N`, step name), a `Data & method` link (opens `#techSection`), the NASA product line at the bottom. The active item is dark green with a yellow number dot. On phones (≤ 860 px) it becomes a fixed bottom tab bar with short labels (`Field`, `Compare`, `Satellites`, `Report`).
+- Side menu `236px`, fixed under the top bar: 4 items (icon with step number, `Step N`, step name), a `Data & method` link (opens `#techSection`), the NASA product line at the bottom. The active item is light green (dark green icon square, yellow number dot); the highlight glides between items. Region tabs and EN/VI use a white thumb with green text. Brand mark: own SVG logo (dark green rounded square, field furrow, sprout, satellite orbit with a yellow dot), also used as the favicon; no AI image and no NASA mark. On phones (≤ 860 px) it becomes a fixed bottom tab bar with short labels (`Field`, `Compare`, `Satellites`, `Report`).
 - Only the active step section is shown (`hidden` on the others). The URL hash keeps the place (`#rotationsSection`; back/forward work); a link to an element inside a step (`#methodCard`, `#btnCsv`) opens that step, opens any `<details>` around the target and scrolls to it. Steps 1–3 end with one `Next: <step>` link.
 
 ### B. Step 1: answer panel (`#heroCard`) and weather presets (`.scenario`)
-- Short intro (the page `h1`) on top, then the step header (dark green icon square with a yellow number dot, title, one-line hint).
-- `#heroTitle` sits in a light green panel: **one plain sentence built only from API numbers**: best non-partial option vs current practice, with the per-year check (`annual_deficit_by_year`): "in every year since 2015" only when it holds in all matched crop years, otherwise "in N of M years". When no option saves water (Đắk Lắk), the sentence says so and adds the erosion result when available. Key phrases (`<b>`) get a flat yellow marker background.
-- Three tiles under the panel, each a separate white card with an icon circle and label: water to pump today (m³/ha and per 1,000 m²), best saving % (or extra water), salt water months with a 12-month strip (Bến Tre) or SRTM slope + IMERG wet-season share (Đắk Lắk).
-- Weather: 3 large preset buttons with icons (`Today`, `Hot & dry`, `Very hot & dry`); the two sliders sit under an `Adjust` disclosure, with a value bubble above the thumb. Inline status text ("Updating…"), never toasts.
+- **Little text, details on demand.** Every step header is icon square + title + an `ⓘ` toggletip (`details.tip`) that holds the one-line hint; a tap outside or Escape closes it. On Step 1 the tip also holds the "built on NASA data" line.
+- `#heroTitle` sits in a light green panel and shows **one short line**: `<best option> needs N% less fresh water` (only the number phrase gets the yellow marker), or `Today's practice already needs the least fresh water`. A `Why?` disclosure under it (`#heroWhy`) holds the full sentence and the model note. The full sentence is built only from API numbers: best non-partial option vs current practice, with the per-year check (`annual_deficit_by_year`): "in every year since 2015" only when it holds in all matched crop years, otherwise "in N of M years". When no option saves water (Đắk Lắk), the sentence says so and adds the erosion result when available. Key phrases (`<b>`) get a flat yellow marker background.
+- Three tiles under the panel, each a separate white card with an icon circle and label: water to pump today (m³/ha and per 1,000 m²), best saving % `vs. today's practice` (or extra water), salt water months with a 12-month strip (Bến Tre) or SRTM slope + IMERG wet-season share (Đắk Lắk).
+- Weather: heading + `A what-if, not a forecast.`, 3 large preset buttons with icons (`Today`, `Hot & dry`, `Very hot & dry`); the two sliders sit under an `Adjust` disclosure, with a value bubble above the thumb. Inline status text ("Updating…"), never toasts.
 
 ### C. Step 2: option card (`.rot-card`), one set only, two columns on desktop
-- Card: single badge (above the title), `S0`-style id + name, big blue number m³/ha with the per-1,000 m² figure, two comparison bars (this option vs current practice), `↘ N% less than today`, typical vs dry-year line, `N months with bare soil` above the 12-month calendar (red underline = salt water month, orange dot = heat), top 1 benefit + top 1 risk, full-width `Details ›` button. The best complete option gets the `1.5px` green border.
+- Card face (scan in 3 seconds): single badge (above the title), `S0`-style id + name, big blue number m³/ha with one label line, two comparison bars (this option vs current practice), `↘ N% less than today` (not on the current-practice card, its badge says it), `N months with bare soil` above the 12-month calendar (red underline = salt water month, orange dot = heat), full-width `Details ›` button. Per-1,000 m² figure, typical vs dry-year line, benefits, risks and gaps live in the detail panel. The best complete option gets the `1.5px` green border.
 - `Details` opens the **detail panel** (`#drawer`): a right-side panel on desktop, a bottom sheet on phones, with backdrop, close button, Escape and focus kept inside. It shows the summary again, the year bar chart (one bar per crop year, stress years in salinity red with event + source, `not yet verified` when unverified), lower-percolation range, per-1,000 m² rows (`plainLine`), config note, erosion block for `D1`, benefits / risks / info gaps side by side, sources, water-balance arithmetic, and `View report for this strategy →` (goes to Step 4). The panel follows language, weather and region changes.
 
 ### D. Step 3: evidence tiles (`.ev-tile`)
-- Icon circle + dataset tag, title, one takeaway line, `See data ›` (opens the same detail panel): `#sowingCheck` (MODIS MOD09A1 sowing dates, Bến Tre; years with fewer detections than expected are always stated, with the cloud explanation), `#rainCheck` (GPM IMERG vs NASA POWER, both regions), `#smapCard` (SMAP L4 dry-season anomaly vs modeled deficit, Đắk Lắk; the driest-year disagreement stated plainly), `#erosionCheck` (RUSLE C-factor + SRTM slope + IMERG wet-season share, Đắk Lắk, `not yet verified`). Tiles hide when the API says `available: false`.
+- Icon circle + dataset tag, title, one takeaway line, `See data ›` (opens the same detail panel, which also holds the secondary lines such as the ground-truth check and the cloud warning): `#sowingCheck` (MODIS MOD09A1 sowing dates, Bến Tre; years with fewer detections than expected are always stated, with the cloud explanation), `#rainCheck` (GPM IMERG vs NASA POWER, both regions), `#smapCard` (SMAP L4 dry-season anomaly vs modeled deficit, Đắk Lắk; the driest-year disagreement stated plainly), `#erosionCheck` (RUSLE C-factor + SRTM slope + IMERG wet-season share, Đắk Lắk, `not yet verified`). Tiles hide when the API says `available: false`.
 
 ### E. Step 4: report and expert section
 - `#btnReport` (big primary), `#btnPrint`, `#btnCsv` with icons; output in `#chatOutput` (empty state until built). Printing shows only the report.
 - `<details id="techSection">` "For experts: data & method" (a full-width row with chevron): data chips (`chip-*`), `#climateChart` (POWER and IMERG bars + ETo line), NDVI strip with the model calendar above it, `#methodCard`, crop table, assumptions. Links into it (e.g. `#methodCard`) open it first.
 
 ### F. Motion and interaction (subtle, purposeful)
-- Number count-up on region / scenario change, static skeleton placeholders while loading, screen fade-in and staggered card entrance each time a step opens, sliding detail panel, slider value bubble, 2 px hover lift + border colour change (no heavy shadow), visible `:focus-visible` rings, 44 px touch targets.
+- Number count-up on region / scenario change with a one-shot yellow tint on the changed value (not a loop), static skeleton placeholders while loading (also while the report is built), screen slide-in from the side you move towards, staggered card entrance each time a step opens or the region changes, bars, calendar segments and salt-month dots that draw in, a highlight that glides between the active side-menu item, region tab and language button, sliding detail panel whose blocks rise in one after another (grab handle on phones), blur-in when the main answer changes, smooth open of the weather sliders, `scale(.97)` press feedback on buttons, a short "Downloaded" confirmation on the CSV button, slider value bubble, 2 px hover lift + border colour change (no heavy shadow), visible `:focus-visible` rings, 44 px touch targets.
+- Timing uses the spring curves stored as `--spring-*` tokens at the top of `web/style.css` (exact values from interior.dev motion entries, MIT, via screenrove.com/motion): `cell` for segmented highlights and press release, `rail` for bars, `disclose`/`chevron` for the sliders panel, `swap` for content that appears or changes (from 4 px blur), `lift` for hover and value flash, `pop` for small icon moves, `drawer` for the detail panel.
+- Motion only uses `transform` / `opacity` (plus a 4 px `filter: blur` while content appears). Entrance delays apply only while a screen opens; once it has settled, hover feedback is immediate.
 - Everything respects `prefers-reduced-motion: reduce` (no transitions or animations, no count-up, no smooth scroll).
 
 ### G. Language (EN | VI)

@@ -120,9 +120,12 @@ def observed_sowing_for_region(region_id, existing_phases, params=None):
         "phases": phases,
         "n_composites_used": int(len(df)),
         "method": params["flood_signal"]["rule"] + " " + params["green_up"]["rule"],
+        "method_vi": _vi(params["flood_signal"], "rule") + " " + _vi(params["green_up"], "rule"),
         "method_source": params["flood_signal"]["source"],
         "expected_error": params["expected_error_days"]["text"],
+        "expected_error_vi": _vi(params["expected_error_days"], "text"),
         "assumptions": params["app_assumptions"]["note"],
+        "assumptions_vi": _vi(params["app_assumptions"], "note"),
         "source": meta.get("source", "NASA MODIS MOD09A1 (EVI/LSWI)"),
         "is_synthetic": bool(meta.get("is_synthetic", False)),
     }
@@ -139,6 +142,11 @@ def _signed_offset_days(date, mmdd):
     return int(best)
 
 
+def _vi(block, key):
+    """Vietnamese text `<key>_vi` of a config block, falling back to the English `<key>`."""
+    return block.get(key + "_vi") or block.get(key)
+
+
 def ground_truth_checks(sowing_dates, reports, max_offset_days=None):
     """Pair each dated field report with the nearest detection within max_offset_days (else 'not detected')."""
     out = []
@@ -148,6 +156,7 @@ def ground_truth_checks(sowing_dates, reports, max_offset_days=None):
         if nearest is not None and max_offset_days is not None and abs((nearest - gt_date).days) > max_offset_days:
             nearest = None
         out.append({**gt,
+                    "text_vi": _vi(gt, "text"),
                     "detected_date": nearest.strftime("%Y-%m-%d") if nearest is not None else None,
                     "difference_days": int((nearest - gt_date).days) if nearest is not None else None})
     return out

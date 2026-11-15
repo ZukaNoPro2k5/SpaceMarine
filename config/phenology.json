@@ -3,6 +3,7 @@
   "flood_signal": {
     "lswi_offset": 0.05,
     "rule": "A composite is 'flooded' when LSWI + 0.05 >= EVI.",
+    "rule_vi": "Một ảnh tổng hợp được coi là 'ngập nước' khi LSWI + 0,05 >= EVI.",
     "source": "Xiao et al. (2005), Remote Sensing of Environment 95: 480-492 (MODIS paddy rice mapping); applied to 13 Mekong Delta provinces by Tran Thi Hien & Vo Quang Minh (2014), Can Tho University",
     "verified": false
   },
@@ -11,6 +12,7 @@
     "fraction_of_cycle_peak": 0.5,
     "cycle_days": 120,
     "rule": "The flooding is accepted as rice establishment if EVI reaches half of the crop-cycle maximum within five 8-day composites (40 days) after the flood signal.",
+    "rule_vi": "Lần ngập được coi là lúa đã gieo sạ nếu EVI đạt một nửa giá trị cao nhất của vụ trong vòng năm ảnh tổng hợp 8 ngày (40 ngày) sau tín hiệu ngập.",
     "source": "Xiao et al. (2005), Remote Sensing of Environment 95: 480-492",
     "verified": false
   },
@@ -19,15 +21,17 @@
     "min_days_between_seasons": 60,
     "min_clear_fraction": 0.5,
     "max_offset_days": 60,
-    "note": "App assumptions (not from a source): a crop cycle must peak at EVI >= 0.35 to exclude permanent water and bare soil; two detected sowings closer than 60 days are merged into one season; a composite is used only if at least half of the 3x3 km window is cloud-free; a detection more than 60 days from every configured sowing date is listed as 'unmatched' (possible extra crop or artefact) and left out of the medians, and a ground report is compared only with a detection within 60 days."
+    "note": "App assumptions (not from a source): a crop cycle must peak at EVI >= 0.35 to exclude permanent water and bare soil; two detected sowings closer than 60 days are merged into one season; a composite is used only if at least half of the 3x3 km window is cloud-free; a detection more than 60 days from every configured sowing date is listed as 'unmatched' (possible extra crop or artefact) and left out of the medians, and a ground report is compared only with a detection within 60 days.",
+    "note_vi": "Giả định của app (không lấy từ nguồn tài liệu): một vụ phải có EVI cao nhất >= 0,35 để loại mặt nước thường xuyên và đất trống; hai lần gieo sạ phát hiện cách nhau dưới 60 ngày được gộp thành một vụ; một ảnh tổng hợp chỉ được dùng khi ít nhất một nửa ô 3x3 km không có mây; một lần phát hiện cách mọi ngày gieo đã cấu hình hơn 60 ngày được ghi là 'không khớp' (có thể là vụ thêm hoặc nhiễu ảnh) và không tính vào trung vị; báo cáo thực địa chỉ được so với lần phát hiện trong vòng 60 ngày."
   },
   "ground_truth": {
     "Ben_Tre_DBSCL": [
-      {"date": "2023-11-22", "approximate": true, "text": "Ba Tri: Winter-Spring rice sown around 22 Nov 2023 and harvested at the end of Feb 2024.", "source": "Báo Nông nghiệp Việt Nam [Vietnam Agriculture newspaper], 22/02/2024", "verified": true}
+      {"date": "2023-11-22", "approximate": true, "text": "Ba Tri: Winter-Spring rice sown around 22 Nov 2023 and harvested at the end of Feb 2024.", "text_vi": "Ba Tri: lúa Đông Xuân gieo sạ khoảng ngày 22/11/2023 và thu hoạch cuối tháng 2/2024.", "source": "Báo Nông nghiệp Việt Nam [Vietnam Agriculture newspaper], 22/02/2024", "verified": true}
     ]
   },
   "expected_error_days": {
     "text": "Published MODIS rice-calendar methods in the Mekong Delta report errors of about 9-18 days (Sakamoto et al.: RMSE 9-12 days; Diem et al. 2021: MAE 15 days, RMSE 18 days for Winter-Spring).",
+    "text_vi": "Các phương pháp lập lịch thời vụ lúa từ MODIS đã công bố ở Đồng bằng sông Cửu Long cho sai số khoảng 9-18 ngày (Sakamoto và cs.: RMSE 9-12 ngày; Diem và cs. 2021: MAE 15 ngày, RMSE 18 ngày cho vụ Đông Xuân).",
     "source": "Sakamoto et al., JARQ 43(3); Diem et al. (2021) - abstracts read",
     "verified": false
   }

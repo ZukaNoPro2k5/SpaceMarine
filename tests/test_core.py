@@ -555,6 +555,14 @@ class TestAeroAgriStep7(unittest.TestCase):
         self.assertEqual(r_vendor.status_code, 200)
         self.assertGreater(len(r_vendor.content), 10000)
 
+    def test_step7_static_files_revalidate(self):
+        """Web files are revalidated on every load, so an update never leaves a stale app.js / style.css in the browser."""
+        import requests
+        for path in ("/", "/app.js", "/style.css"):
+            r = requests.get(f"{self.base_url}{path}")
+            self.assertEqual(r.status_code, 200)
+            self.assertIn("no-cache", r.headers.get("Cache-Control", ""), path)
+
     def test_step7_api_status_and_regions(self):
         """Kiểm tra GET /api/status và GET /api/regions."""
         import requests
@@ -1184,8 +1192,13 @@ class TestAeroAgriFix6(unittest.TestCase):
         for s in ('data-lang="en"', 'data-lang="vi"', "data-i18n=", 'id="stepNav"', 'id="evidenceSection"'):
             self.assertIn(s, html)
         for s in ("const I18N = {", "en: {", "vi: {", "function t(", "localStorage", "documentElement.lang",
-                  "label_vi", "event_vi", "evidence_text", "Báo cáo hiện có bằng tiếng Anh", "prefers-reduced-motion"):
+                  "label_vi", "event_vi", "evidence_text", "prefers-reduced-motion"):
             self.assertIn(s, js)
+        # the report and the satellite/erosion notes follow the UI language (server `lang` + `_vi` fields)
+        self.assertIn("strategy_id: selectedStrategy, lang", js)
+        for f in ('vf(os, "method")', 'vf(os, "expected_error")', 'vf(os, "assumptions")', 'vf(g, "text")',
+                  'vf(ero, "caveats")', 'vf(ero, "c_labels")'):
+            self.assertIn(f, js)
         self.assertIn("prefers-reduced-motion", css)
         # every dynamic key used with t("...") exists in the English dictionary
         en_block = js.split("const I18N = {", 1)[1].split("vi: {", 1)[0]
@@ -1570,6 +1583,148 @@ class TestT4T5Validation(unittest.TestCase):
         self.assertFalse(rainfall_power_vs_imerg("Ben_Tre_DBSCL")["available"])
         self.assertFalse(smap_dry_season_anomaly("Ben_Tre_DBSCL", [1, 2, 3, 4], [])["available"])
 
+
+
+class TestVietnameseServerText(unittest.TestCase):
+    """VI mode: server-built text (sowing detection, erosion caveats, advisory report) also has Vietnamese."""
+
+    @classmethod
+    def setUpClass(cls):
+        import threading
+        cls._tmp_dir = tempfile.TemporaryDirectory()
+        cls.old_data_dir = os.environ.get("AERO_DATA_DIR")
+        os.environ["AERO_DATA_DIR"] = cls._tmp_dir.name
+        from scripts.make_demo_data import generate_demo_dataset
+        generate_demo_dataset()
+        from server import create_server
+        cls.server = create_server("127.0.0.1", 0)
+        cls.port = cls.server.server_address[1]
+        cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
+        cls.thread.start()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.server.shutdown()
+        cls.server.server_close()
+        if cls.old_data_dir:
+            os.environ["AERO_DATA_DIR"] = cls.old_data_dir
+        else:
+            os.environ.pop("AERO_DATA_DIR", None)
+        cls._tmp_dir.cleanup()
+
+    def _observed(self, params=None):
+        from core.phenology import observed_sowing_for_region
+        from core.water_balance import load_config
+        gee_dir = os.path.join(self._tmp_dir.name, "raw", "gee")
+        os.makedirs(gee_dir, exist_ok=True)
+        TestT3SowingDetection._series(["2018-05-25", "2018-11-05", "2019-05-20", "2019-11-01"]).to_csv(
+            os.path.join(gee_dir, "mod09a1_Ben_Tre_DBSCL.csv"), index=False)
+        s0 = next(s for s in load_config("rotations")["Ben_Tre_DBSCL"]["strategies"] if s["id"] == "S0")
+        try:
+            return observed_sowing_for_region("Ben_Tre_DBSCL", s0["phases"], params)
+        finally:
+            os.remove(os.path.join(gee_dir, "mod09a1_Ben_Tre_DBSCL.csv"))
+
+    def test_vi_1_observed_sowing_has_vietnamese_fields(self):
+        obs = self._observed()
+        self.assertTrue(obs["available"])
+        for en, vi in (("method", "method_vi"), ("expected_error", "expected_error_vi"),
+                       ("assumptions", "assumptions_vi")):
+            self.assertTrue(obs[vi], vi)
+            self.assertNotEqual(obs[vi], obs[en], vi)
+        self.assertIn("LSWI", obs["method_vi"])
+        self.assertIn("EVI", obs["method_vi"])
+        gt = obs["ground_truth_checks"][0]
+        self.assertTrue(gt["text_vi"])
+        self.assertNotEqual(gt["text_vi"], gt["text"])
+        self.assertIn("gieo sạ", gt["text_vi"])
+
+    def test_vi_2_observed_sowing_falls_back_to_english(self):
+        from core.phenology import load_params
+        import copy
+        params = copy.deepcopy(load_params())
+        params["flood_signal"].pop("rule_vi", None)
+        params["green_up"].pop("rule_vi", None)
+        params["expected_error_days"].pop("text_vi", None)
+        params["app_assumptions"].pop("note_vi", None)
+        for gt in params["ground_truth"]["Ben_Tre_DBSCL"]:
+            gt.pop("text_vi", None)
+        obs = self._observed(params)
+        self.assertEqual(obs["method_vi"], obs["method"])
+        self.assertEqual(obs["expected_error_vi"], obs["expected_error"])
+        self.assertEqual(obs["assumptions_vi"], obs["assumptions"])
+        gt = obs["ground_truth_checks"][0]
+        self.assertEqual(gt["text_vi"], gt["text"])
+
+    def test_vi_3_erosion_caveats_and_labels(self):
+        from core.erosion import erosion_comparison
+        res = erosion_comparison("Dak_Lak_Tay_Nguyen")
+        self.assertTrue(res["available"])
+        self.assertEqual(len(res["caveats_vi"]), len(res["caveats"]))
+        self.assertGreater(len(res["caveats_vi"]), 0)
+        for en, vi in zip(res["caveats"], res["caveats_vi"]):
+            self.assertTrue(vi)
+            self.assertNotEqual(en, vi)
+        self.assertEqual(set(res["c_labels_vi"]), set(res["c_labels"]))
+        for sid in res["c_labels"]:
+            self.assertNotEqual(res["c_labels_vi"][sid], res["c_labels"][sid])
+
+    def _advice_inputs(self, reg="Ben_Tre_DBSCL"):
+        from core.scoring import evaluate_crop_suitability
+        from core.rotation import evaluate_rotations
+        ev = evaluate_crop_suitability(reg, 2.0, -20.0)
+        rot = evaluate_rotations(reg, 2.0, -20.0)
+        if not ev.get("available") or not rot.get("available"):
+            self.skipTest("Thiếu dữ liệu POWER")
+        return ev, rot
+
+    def test_vi_4_build_advice_vietnamese(self):
+        from core.advisor import build_advice
+        ev, rot = self._advice_inputs()
+        md = build_advice("Ben_Tre_DBSCL", ev, rotations=rot, strategy_id="S3", lang="vi")["markdown"]
+        for vi_heading in ("Tình trạng dữ liệu mùa khô", "So sánh nước ngọt cả năm theo phương án",
+                           "Việc cần làm trước vụ tới", "Phương án đã chọn", "Kịch bản mô phỏng"):
+            self.assertIn(vi_heading, md)
+        for en in ("What to do", "Dry-season data status", "Whole-year fresh water", "Selected strategy",
+                   "Risks to weigh", "Baseline", "Region analysed", "Simulated scenario", "Note:"):
+            self.assertNotIn(en, md)
+        s = {x["id"]: x for x in rot["strategies"]}
+        for sid in ("S1", "S2", "S3"):
+            self.assertIn(s[sid]["vi"]["name"], md)
+            self.assertNotIn(s[sid]["name_vi"], md)
+        self.assertIn(s["S3"]["vi"]["risks"][0].rstrip("."), md)
+        self.assertIn("Lúa Hè Thu", md)
+        # Vietnamese thousands separator "." on the baseline figure
+        b = s["S0"]["annual_deficit_mm"] * 10
+        self.assertGreaterEqual(b, 1000)
+        self.assertIn(f"{b:,.0f}".replace(",", "."), md)
+        # default call keeps the English report
+        md_en = build_advice("Ben_Tre_DBSCL", ev, rotations=rot, strategy_id="S3")["markdown"]
+        self.assertIn("What to do before the next season", md_en)
+        self.assertIn("Dry-season data status", md_en)
+        self.assertNotIn("Việc cần làm", md_en)
+        self.assertEqual(md_en, build_advice("Ben_Tre_DBSCL", ev, rotations=rot, strategy_id="S3",
+                                             lang="en")["markdown"])
+
+    def test_vi_5_build_advice_vietnamese_no_data(self):
+        from core.advisor import build_advice
+        md = build_advice("Ben_Tre_DBSCL", {"available": False}, lang="vi")["markdown"]
+        self.assertIn("Chưa có khuyến nghị", md)
+        self.assertNotIn("What to do", md)
+        self.assertIn("data/raw/power/Ben_Tre_DBSCL.csv", md)
+
+    def test_vi_6_api_advise_lang(self):
+        import requests
+        url = f"http://127.0.0.1:{self.port}/api/advise"
+        r = requests.post(url, json={"region": "Dak_Lak_Tay_Nguyen", "lang": "vi"})
+        self.assertEqual(r.status_code, 200)
+        md = r.json()["markdown"]
+        self.assertIn("Việc cần làm trước vụ tới", md)
+        self.assertNotIn("What to do", md)
+        self.assertNotIn("Dry-season data status", md)
+        r_en = requests.post(url, json={"region": "Dak_Lak_Tay_Nguyen"})
+        self.assertEqual(r_en.status_code, 200)
+        self.assertIn("What to do before the next season", r_en.json()["markdown"])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -42,6 +42,12 @@ class AeroAgriAPIHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=WEB_DIR, **kwargs)
 
+    def end_headers(self):
+        # Revalidate web files on every load (cheap on localhost), so an update never runs a stale app.js / style.css
+        if not self.path.startswith("/api/"):
+            self.send_header("Cache-Control", "no-cache")
+        super().end_headers()
+
     def send_json(self, status_code, payload):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(status_code)
@@ -225,9 +231,11 @@ class AeroAgriAPIHandler(SimpleHTTPRequestHandler):
 
                 question = body.get("question", "")
                 strategy_id = body.get("strategy_id")
+                lang = "vi" if body.get("lang") == "vi" else "en"
                 eval_res = evaluate_crop_suitability(reg_id, delta_temp_c=d_temp, delta_rain_pct=d_rain)
                 rot_res = evaluate_rotations(reg_id, delta_temp_c=d_temp, delta_rain_pct=d_rain)
-                advice = build_advice(reg_id, eval_res, question=question, rotations=rot_res, strategy_id=strategy_id)
+                advice = build_advice(reg_id, eval_res, question=question, rotations=rot_res, strategy_id=strategy_id,
+                                      lang=lang)
                 self.send_json(200, advice)
                 return
 

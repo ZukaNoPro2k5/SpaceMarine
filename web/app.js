@@ -56,6 +56,7 @@ const I18N = {
         no_weather: "No weather data for this region yet", no_base: "No current-practice information",
         synth: "<strong>Note:</strong> this region is using simulated demo data because no measured local file is available yet.",
         ans_better: "In {region}, <b>{best}</b> needs <b>{pct}% less fresh water</b> than {base} — {years}.",
+        ans_short_better: "<strong>{best}</strong> needs <b>{pct}% less fresh water</b>", ans_short_none: "Today's practice already needs <b>the least fresh water</b>",
         ans_none: "In {region}, {base} already needs the least fresh water. <b>{alt}</b> needs <b>{pct}% more</b>{months} — {years}{ero}.",
         ans_ero: ", but loses about <b>{pct}% less soil</b> to erosion (C-factor; not yet verified)",
         ans_months: " in {m}", years_all: "in every year since {y}", years_some: "in {n} of {m} years",
@@ -64,8 +65,8 @@ const I18N = {
         scen_less: "With weather at {w}, today's practice needs <b>{d} m³/ha less</b> fresh water than in 2015–2025.",
         scen_w: "{t} °C, rain {r}%",
         tile_water: "Water to pump today", tile_water_scen: "Water to pump in this weather", tile_water_sub: "{v} m³ per 1,000 m² · {when}", when_year: "per year", when_in: "in {m}",
-        tile_best: "Best saving", tile_with: "with {name}", tile_more: "More water with the other option",
-        tile_sal: "Salt water months", tile_sal_sub: "{n} months a year · source in Step 4 (expert data)",
+        tile_best: "Best saving", tile_with: "vs. today's practice", tile_more: "More water with the other option",
+        tile_sal: "Salt water months", tile_sal_sub: "{n} months a year",
         tile_slope: "Median slope (SRTM)", tile_slope_sub: "10% of the land steeper than {p90}° · {share}% of rain falls in {m}",
         tile_bare: "Months with bare soil", tile_bare_sub: "today's practice",
         badge_current: "Current practice", badge_shrimp: "Shrimp phase not modeled", badge_saves: "Saves {p}% water", badge_more: "Uses {p}% more water",
@@ -142,6 +143,8 @@ const I18N = {
         no_weather: "Chưa có dữ liệu khí tượng cho vùng này", no_base: "Chưa có thông tin cách đang làm",
         synth: "<strong>Lưu ý:</strong> vùng này đang dùng dữ liệu mô phỏng vì chưa có file đo thật.",
         ans_better: "Ở {region}, <b>{best}</b> cần <b>ít hơn {pct}% nước ngọt</b> so với {base} — {years}.",
+        ans_short_better: "<strong>{best}</strong> cần <b>ít hơn {pct}% nước ngọt</b>", ans_short_none: "Cách đang làm đã <b>tốn ít nước ngọt nhất</b>",
+        why: "Vì sao?", tip_aria: "Giải thích",
         ans_none: "Ở {region}, {base} đã là cách cần ít nước ngọt nhất. <b>{alt}</b> cần <b>thêm {pct}% nước</b>{months} — {years}{ero}.",
         ans_ero: ", nhưng giảm khoảng <b>{pct}% đất bị xói mòn</b> (hệ số C; chưa kiểm chứng)",
         ans_months: " trong {m}", years_all: "năm nào cũng vậy kể từ {y}", years_some: "trong {n}/{m} năm",
@@ -150,8 +153,8 @@ const I18N = {
         scen_less: "Với thời tiết {w}, cách đang làm cần <b>ít hơn {d} m³/ha</b> nước ngọt so với khí hậu 2015–2025.",
         scen_w: "{t} °C, mưa {r}%",
         tile_water: "Nước phải bơm hiện nay", tile_water_scen: "Nước phải bơm với thời tiết này", tile_water_sub: "{v} m³ mỗi 1.000 m² · {when}", when_year: "mỗi năm", when_in: "trong {m}",
-        tile_best: "Tiết kiệm nhiều nhất", tile_with: "với {name}", tile_more: "Phương án kia tốn thêm nước",
-        tile_sal: "Tháng nước mặn", tile_sal_sub: "{n} tháng mỗi năm · nguồn ở Bước 4 (dữ liệu chuyên gia)",
+        tile_best: "Tiết kiệm nhiều nhất", tile_with: "so với cách đang làm", tile_more: "Phương án kia tốn thêm nước",
+        tile_sal: "Tháng nước mặn", tile_sal_sub: "{n} tháng mỗi năm",
         tile_slope: "Độ dốc trung vị (SRTM)", tile_slope_sub: "10% diện tích dốc hơn {p90}° · {share}% lượng mưa rơi {m}",
         tile_bare: "Số tháng đất trống", tile_bare_sub: "cách đang làm",
         badge_current: "Đang làm", badge_shrimp: "Chưa tính vụ tôm", badge_saves: "Tiết kiệm {p}% nước", badge_more: "Tốn thêm {p}% nước",
@@ -209,7 +212,7 @@ const I18N = {
         chip_sal: "Độ mặn (trạm mặt đất)", chip_sm_label: "SMAP L4",
         report_idle: "Bấm nút để tạo báo cáo.", computing: "Đang tính...",
         report_err: "Không tạo được báo cáo (mã {c}).", conn_err: "Không kết nối được máy chủ: {m}",
-        ctx: "Đang xem: {r} · Thời tiết: {w}{s}", ctx_avg: "trung bình 2015–2025", ctx_strategy: " · Phương án: {n}", report_lang: "Báo cáo hiện có bằng tiếng Anh.",
+        ctx: "Đang xem: {r} · Thời tiết: {w}{s}", ctx_avg: "trung bình 2015–2025", ctx_strategy: " · Phương án: {n}", report_lang: "",
         ch_power: "Mưa, NASA POWER (mm/tháng)", ch_imerg: "Mưa, GPM IMERG (mm/tháng)", ch_eto: "Bốc thoát hơi ETo (mm/tháng)", ch_unit: "mm/tháng",
         ndvi_note: "Chỉ số NDVI từ vệ tinh MODIS, trung vị ô 3×3 km quanh điểm ({lat}, {lon}), trung bình {yrs}. Ô càng đậm là càng nhiều cây xanh; ô nhạt là ruộng trống, mới gieo hoặc ngập nước. Dòng trên là lịch mô hình của cách đang làm.",
         several_years: "nhiều năm", ndvi_model: "Lịch mô hình của cách đang làm", ndvi_meas: "Độ xanh vệ tinh đo được (NDVI)",
@@ -221,7 +224,7 @@ const I18N = {
         nav1s: "Ruộng", nav2s: "So sánh", nav3s: "Vệ tinh", nav4s: "Báo cáo", next: "Tiếp theo",
         nav_foot: "NASA POWER · MODIS · GPM IMERG · SMAP · SRTM, 2015–2025", footer_method: "Cách tính &amp; nguồn", close: "Đóng",
         step1_hint: "Câu trả lời ngắn trước. Chi tiết chỉ cách một lần chạm.",
-        whatif_long: "Nếu năm đó nóng hơn và khô hơn thì sao? Đây là kịch bản giả định, không phải dự báo.",
+        whatif_long: "Giả định, không phải dự báo.",
         // static page text (English originals are in index.html)
         tab_bentre: "Bến Tre (ĐBSCL)", tab_daklak: "Đắk Lắk (Tây Nguyên)", aria_region: "Chọn vùng canh tác",
         nav1: "Ruộng của bạn hôm nay", nav2: "So sánh phương án", nav3: "Vệ tinh cho thấy gì", nav4: "Kế hoạch &amp; báo cáo",
@@ -239,7 +242,7 @@ const I18N = {
         step3_hint: "Mỗi ô là một bộ dữ liệu NASA và một kết luận, đã đối chiếu với mô hình.",
         step4: "Bước 4", step4_t: "Kế hoạch &amp; báo cáo",
         step4_hint: "Một trang để in hoặc gửi cho hợp tác xã. Ghép từ chính số liệu trên trang; không dùng AI tạo chữ.",
-        btn_report: "Tạo báo cáo cho cả vùng", btn_print: "In", btn_csv: "CSV",
+        btn_report: "Tạo báo cáo cho cả vùng", btn_print: "In", btn_csv: "CSV", csv_done: "Đã tải",
         btn_csv_t: "Mỗi dòng là một vụ, một năm vụ hoặc một phép đối chiếu vệ tinh. 1 mm = 10 m³/ha.",
         expert_s: "Dành cho chuyên gia: dữ liệu và cách tính",
         chart_h: "Mưa và bốc thoát hơi ETo trung bình theo tháng (2015–2025)",
@@ -337,6 +340,7 @@ function stratName(st) {
 function sText(st, f) { const v = viOf(st); return v && v[f] !== undefined && v[f] !== null ? v[f] : st[f]; }
 function evText(st, i) { const v = viOf(st); return (v && v.evidence_text && v.evidence_text[i]) || (st.evidence[i] || {}).text || ""; }
 function phLabel(ph) { return (lang === "vi" && ph.label_vi) || ph.label; }
+function vf(obj, f) { return obj ? (lang === "vi" && obj[f + "_vi"] !== undefined && obj[f + "_vi"] !== null ? obj[f + "_vi"] : obj[f]) : undefined; }
 function rText(data, f) { return lang === "vi" && data.vi && data.vi[f] !== undefined && data.vi[f] !== null ? data.vi[f] : data[f]; }
 function regionName() { return REGIONS_DATA[currentRegion].name; }
 function labelMap() {
@@ -358,9 +362,15 @@ function animateNums(root) {
     root.querySelectorAll(".num[data-k]").forEach(el => {
         const k = el.dataset.k, to = Number(el.dataset.v), d = Number(el.dataset.d) || 0;
         if (el.dataset.v === "" || Number.isNaN(to)) return;
-        const from = isNum(prevNums[k]) ? prevNums[k] : 0;
+        const known = isNum(prevNums[k]), from = known ? prevNums[k] : 0;
         prevNums[k] = to;
         if (REDUCED || Math.abs(to - from) < Math.pow(10, -d)) return;
+        if (known) { // value flash (interior.dev pattern): lift + tint in, hold 900 ms, then settle back
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                el.classList.add("flash");
+                setTimeout(() => el.classList.remove("flash"), 900); // timed from the add, so a late frame cannot leave it lit
+            }));
+        }
         const t0 = performance.now(), dur = 550;
         const step = now => {
             const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
@@ -396,13 +406,14 @@ function setLang(l, rerender = true) {
     document.documentElement.lang = lang;
     document.querySelectorAll("#langToggle button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
     applyStaticText();
+    requestAnimationFrame(updateGlides); // label widths change with the language
     document.getElementById("heroPlace").textContent = `${regionName()} · ${REGIONS_DATA[currentRegion].place[lang]}`;
     updateSliderLabels();
     renderStatusChips();
     const note = document.getElementById("reportLangNote");
     note.textContent = t("report_lang");
     note.hidden = !t("report_lang");
-    if (!reportReady) resetReport();
+    if (reportReady) loadReport(); else resetReport(); // a built report follows the language
     if (!rerender) return;
     if (lastRotationData) renderAll();
     if (lastCrops) renderCropTable(lastCrops);
@@ -421,6 +432,8 @@ function initControls() {
             selectedStrategyName = "";
             closeDrawer(false);
             document.querySelectorAll(".region-tab").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+            updateGlides();
+            replayNext = true;
             baselineDeficits = {};
             loadRegionData();
         });
@@ -437,7 +450,15 @@ function initControls() {
         chip.addEventListener("click", () => { sTemp.value = chip.dataset.temp; sRain.value = chip.dataset.rain; onChange(); });
     });
 
-    document.getElementById("btnCsv").addEventListener("click", downloadCsv);
+    document.getElementById("btnCsv").addEventListener("click", e => {
+        if (!downloadCsv()) return;
+        const b = e.currentTarget; // short "downloaded" confirmation on the button itself
+        b.classList.add("done");
+        clearTimeout(b._t);
+        b._t = setTimeout(() => b.classList.remove("done"), 1800);
+    });
+    let glideRaf = 0;
+    window.addEventListener("resize", () => { cancelAnimationFrame(glideRaf); glideRaf = requestAnimationFrame(updateGlides); });
     document.getElementById("btnPrint").addEventListener("click", async () => {
         if (!reportReady) await loadReport();
         window.print();
@@ -461,7 +482,11 @@ function initControls() {
         const a = e.target.closest('a[href^="#"]');
         if (a && a.getAttribute("href").length > 1) { e.preventDefault(); goTo(a.getAttribute("href"), true); }
     });
+    document.addEventListener("click", e => {
+        document.querySelectorAll("details.tip[open]").forEach(tip => { if (!tip.contains(e.target)) tip.open = false; });
+    });
     document.addEventListener("keydown", e => {
+        if (e.key === "Escape") document.querySelectorAll("details.tip[open]").forEach(tip => { tip.open = false; });
         const d = document.getElementById("drawer");
         if (d.hidden) return;
         if (e.key === "Escape") { closeDrawer(); return; }
@@ -480,11 +505,46 @@ function initControls() {
 // SCREENS: the side menu shows one step at a time; the URL hash keeps the place
 // ==========================================================================
 const STEPS = ["step1", "rotationsSection", "evidenceSection", "reportSection"];
-let currentStep = null;
+let currentStep = null, replayNext = false, settleTimer = 0;
+
+// A highlight that glides to the active item (side menu, region tabs, language)
+function glide(container, active) {
+    if (!container) return;
+    let g = container.querySelector(":scope > .glide");
+    if (!g) {
+        g = document.createElement("span");
+        g.className = "glide";
+        g.setAttribute("aria-hidden", "true");
+        container.prepend(g);
+        container.classList.add("has-glide");
+    }
+    if (!active || !active.offsetParent) { g.style.opacity = "0"; return; }
+    g.style.opacity = "1";
+    g.style.width = `${active.offsetWidth}px`;
+    g.style.height = `${active.offsetHeight}px`;
+    g.style.transform = `translate(${active.offsetLeft}px, ${active.offsetTop}px)`;
+    if (!g.dataset.ready) requestAnimationFrame(() => { g.dataset.ready = "1"; }); // no slide on first paint
+}
+function updateGlides() {
+    glide(document.getElementById("stepNav"), document.querySelector("#stepNav a.active"));
+    glide(document.querySelector(".region-tabs"), document.querySelector('.region-tab[aria-pressed="true"]'));
+    glide(document.getElementById("langToggle"), document.querySelector('#langToggle button[aria-pressed="true"]'));
+}
+
+// Replay the staggered entrance of a screen; "settled" then makes hover feedback instant again
+function replayStep(el) {
+    el.classList.remove("seen", "settled");
+    clearTimeout(settleTimer);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("seen")));
+    settleTimer = setTimeout(() => el.classList.add("settled"), REDUCED ? 0 : 1100);
+}
 
 function showStep(id) {
     if (!STEPS.includes(id)) id = STEPS[0];
     const changed = id !== currentStep;
+    const el = document.getElementById(id);
+    // Screens slide in from the side you are moving towards
+    if (changed) el.style.setProperty("--dir", currentStep ? Math.sign(STEPS.indexOf(id) - STEPS.indexOf(currentStep)) : 0);
     currentStep = id;
     STEPS.forEach(s => { document.getElementById(s).hidden = s !== id; });
     document.querySelectorAll("#stepNav a[data-step]").forEach(a => {
@@ -492,11 +552,9 @@ function showStep(id) {
         a.classList.toggle("active", on);
         if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
+    updateGlides();
     if (!changed) return;
-    // Replay the staggered card entrance every time a screen opens
-    const el = document.getElementById(id);
-    el.classList.remove("seen");
-    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("seen")));
+    replayStep(el);
     if (id === "reportSection" && climateChart) climateChart.resize();
 }
 
@@ -531,7 +589,9 @@ function fillDrawer(host) {
     document.getElementById("drawerKicker").textContent = isCard
         ? t("details_k", { id: host.dataset.strategyId }) : (host.querySelector(".ev-kicker") || {}).textContent || t("see_data_k");
     document.getElementById("drawerTitle").innerHTML = (host.querySelector(".rot-name, .ev-title") || {}).innerHTML || "";
-    document.getElementById("drawerBody").innerHTML = (host.querySelector(".more > div") || {}).innerHTML || "";
+    const body = document.getElementById("drawerBody");
+    body.innerHTML = (host.querySelector(".more > div") || {}).innerHTML || "";
+    [...body.children].forEach((c, i) => c.style.setProperty("--k", Math.min(i, 10))); // staggered rise
 }
 
 function openDrawer(host, trigger) {
@@ -685,7 +745,7 @@ async function loadRegionData() {
         show("chartWrapper", false); show("climateEmpty", true);
         show("rotationsContent", false); show("rotationsEmpty", true);
         show("cropTableWrapper", false); show("evaluateEmpty", true);
-        document.getElementById("heroTitle").textContent = t("no_weather");
+        Object.assign(document.getElementById("heroTitle"), { textContent: t("no_weather"), _raw: null });
         document.getElementById("heroBody").innerHTML = "";
         return;
     }
@@ -771,6 +831,7 @@ function renderAll() {
     renderAssumptionsBox(data);
     updateReportContext();
     refreshDrawer();
+    if (replayNext && currentStep) { replayNext = false; replayStep(document.getElementById(currentStep)); } // new region: replay the entrance
 }
 
 // ==========================================================================
@@ -795,30 +856,38 @@ function renderHero(data, strategies) {
     const titleEl = document.getElementById("heroTitle");
     const bodyEl = document.getElementById("heroBody");
     const base = strategies.find(s => s.is_existing);
-    if (!base || !isNum(base.annual_deficit_mm)) { titleEl.textContent = t("no_base"); bodyEl.innerHTML = ""; return; }
+    if (!base || !isNum(base.annual_deficit_mm)) { titleEl.textContent = t("no_base"); titleEl._raw = null; bodyEl.innerHTML = ""; return; }
 
     const alts = strategies.filter(s => !s.is_existing && !s.partial && isNum(s.annual_deficit_mm))
         .sort((a, b) => a.annual_deficit_mm - b.annual_deficit_mm);
     const best = alts[0];
     const ero = data.cross_checks && data.cross_checks.erosion;
     const baseDef = base.annual_deficit_mm;
-    let answer = "", saving = null;
+    let answer = "", short = "", saving = null;
     if (best && best.annual_deficit_mm < baseDef) {
         saving = Math.round((baseDef - best.annual_deficit_mm) / baseDef * 100);
+        short = t("ans_short_better", { best: stratName(best), pct: saving });
         answer = t("ans_better", { region: regionName(), best: stratName(best), pct: saving, base: stratName(base), years: yearsCompare(best, base, true) });
     } else if (best) {
         const more = Math.round((best.annual_deficit_mm - baseDef) / baseDef * 100);
         const eroTxt = ero && ero.available && ero.compared_strategy === best.id ? t("ans_ero", { pct: fmt(ero.reduction_pct, 0) }) : "";
+        short = t("ans_short_none");
         answer = t("ans_none", { region: regionName(), base: stratName(base), alt: stratName(best), pct: more,
             months: base.water_full_year === false && (base.water_months || []).length ? t("ans_months", { m: monthSpans(base.water_months) }) : "",
             years: yearsCompare(best, base, false), ero: eroTxt });
     }
-    titleEl.innerHTML = answer || esc(stratName(base));
+    const html = short || esc(stratName(base));
+    if (titleEl._raw !== html) { // blur-in when the answer changes (region, weather, language)
+        titleEl._raw = html;
+        titleEl.innerHTML = html;
+        titleEl.classList.remove("swap"); void titleEl.offsetWidth; titleEl.classList.add("swap");
+    }
 
     // Tiles: water today, best saving (or extra water), salt months / slope / bare months
     const scenOn = parseFloat(document.getElementById("sliderTemp").value) !== 0 || parseInt(document.getElementById("sliderRain").value, 10) !== 0;
     const when = base.water_full_year === false && (base.water_months || []).length ? t("when_in", { m: monthSpans(base.water_months) }) : t("when_year");
-    const tile = (cls, icCls, icon, lbl, numHtml, sub, extra = "") => `<div class="tile${cls ? " " + cls : ""}">
+    let ti = 0;
+    const tile = (cls, icCls, icon, lbl, numHtml, sub, extra = "") => `<div class="tile reveal${cls ? " " + cls : ""}" style="--i:${ti++}">
         <div class="tile-head"><span class="ic${icCls ? " " + icCls : ""}">${ico(icon)}</span><span class="tile-lbl">${lbl}</span></div>
         <div class="tile-num">${numHtml}</div><div class="tile-sub">${sub}</div>${extra}</div>`;
     const tiles = [tile("", "", "drop", t(scenOn ? "tile_water_scen" : "tile_water"),
@@ -832,7 +901,7 @@ function renderHero(data, strategies) {
     const sal = (data.salinity_months || []).map(Number);
     if (sal.length) {
         let dots = "";
-        for (let m = 1; m <= 12; m++) dots += `<span class="${sal.includes(m) ? "on" : ""}" title="${MONTHS_LONG[lang][m - 1]}${sal.includes(m) ? t("sal_tip") : ""}"><i></i>${mInitial(m)}</span>`;
+        for (let m = 1; m <= 12; m++) dots += `<span class="${sal.includes(m) ? "on" : ""}" style="--m:${m}" title="${MONTHS_LONG[lang][m - 1]}${sal.includes(m) ? t("sal_tip") : ""}"><i></i>${mInitial(m)}</span>`;
         tiles.push(tile("sal", "ic-sal", "waves", t("tile_sal"), monthSpans(sal), t("tile_sal_sub", { n: sal.length }),
             `<div class="sal-dots" role="img" aria-label="${esc(t("tile_sal") + ": " + monthSpans(sal))}">${dots}</div>`));
     } else if (ero && ero.available && isNum(ero.slope_deg_p50)) {
@@ -850,7 +919,8 @@ function renderHero(data, strategies) {
         const d = Math.round((baseDef - b0) * 10);
         scen = `<p class="hero-scen">${t(d >= 0 ? "scen_more" : "scen_less", { w: scenarioText(tv, r), d: fmt(Math.abs(d)) })}</p>`;
     }
-    bodyEl.innerHTML = `<div class="tiles">${tiles.join("")}</div>${scen}<p class="hero-note">${ico("info")}<span>${t("ans_note")}</span></p>`;
+    bodyEl.innerHTML = `<div class="tiles">${tiles.join("")}</div>${scen}`;
+    document.getElementById("heroWhy").innerHTML = `${answer ? `<p>${answer}</p>` : ""}<p class="muted">${t("ans_note")}</p>`;
     animateNums(bodyEl);
 }
 
@@ -895,12 +965,12 @@ function yearStrip(st, stressYears) {
     if (!yrs.length) return "";
     const max = Math.max(0, ...yrs.map(y => y.deficit_mm).filter(isNum));
     const stress = new Map((stressYears || []).map(s => [stressKey(s), s]));
-    const bars = yrs.map(y => {
+    const bars = yrs.map((y, yi) => {
         const s = stress.get(stressKey(y));
         const h = isNum(y.deficit_mm) && max > 0 ? Math.max(6, y.deficit_mm / max * 100) : 0;
         let tip = `${y.label}: ${isNum(y.deficit_mm) ? `${m3(y.deficit_mm)} m³/ha` : t("no_data")}`;
         if (s) tip += ` · ${(lang === "vi" && s.event_vi) || s.event} (${s.source}${s.verified === false ? "; " + t("nyv") : ""})`;
-        return `<span class="yr-bar${s ? " stress" : ""}" style="height:${h.toFixed(0)}%" title="${esc(tip)}"></span>`;
+        return `<span class="yr-bar${s ? " stress" : ""}" style="height:${h.toFixed(0)}%;--y:${yi}" title="${esc(tip)}"></span>`;
     }).join("");
     return `<h4>${t("h_years")}</h4>
         <div class="yr-strip" role="img" aria-label="${esc(t("yr_aria", { a: yrs[0].label, b: yrs[yrs.length - 1].label }))}">${bars}</div>
@@ -923,9 +993,11 @@ function renderGanttTimeline(st, salMonths, usedCrops) {
         if (last && last.key === key) last.months.push(mc);
         else blocks.push({ key, bare: !!mc.bare, label: mc.phase_label, months: [mc] });
     });
+    let col = 0;
     const segs = blocks.map(b => {
         const span = b.months.length;
-        const style = `grid-column: span ${span};`;
+        const style = `grid-column: span ${span}; --c:${col}`; // --c staggers the left-to-right draw-in
+        col += span;
         if (b.bare) return `<div class="gantt-seg bare" style="${style}" title="${esc(t("bare_tip"))}">${span >= 2 ? t("bare") : ""}</div>`;
         const ck = cropByLabel[b.label] || "other";
         usedCrops.add(ck);
@@ -937,13 +1009,13 @@ function renderGanttTimeline(st, salMonths, usedCrops) {
 
 function erosionForCard(st, ero) {
     if (!ero || !ero.available || st.id !== ero.compared_strategy) return "";
-    const lbl = ero.c_labels || {};
+    const lbl = vf(ero, "c_labels") || {};
     const site = isNum(ero.slope_deg_p50) ? `<p class="muted">${t("ero_site", { a: fixed(ero.slope_deg_p50, 1), b: fixed(ero.slope_deg_p90, 1),
         s: Math.round(ero.wet_season_rain_share * 100), m: monthSpans(ero.wet_season_months || []) })}</p>` : "";
     return `<div class="sub-block"><h4>${t("ero_h")}</h4>
-        <p title="${esc((ero.caveats || []).join(" "))}">${t("ero_line", { p: fmt(ero.reduction_pct, 0), v: ero.verified === false ? "; " + t("nyv") : "" })}</p>${site}
+        <p title="${esc((vf(ero, "caveats") || []).join(" "))}">${t("ero_line", { p: fmt(ero.reduction_pct, 0), v: ero.verified === false ? "; " + t("nyv") : "" })}</p>${site}
         <ul class="src-list"><li>${t("ero_c", { cb: ero.c_baseline, lb: lbl[ero.baseline_strategy] || ero.baseline_strategy, cc: ero.c_compared, lc: lbl[ero.compared_strategy] || ero.compared_strategy, r: ero.soil_loss_ratio })}</li>
-        ${(ero.caveats || []).map(c => `<li>${c}</li>`).join("")}
+        ${(vf(ero, "caveats") || []).map(c => `<li>${c}</li>`).join("")}
         <li>${ero.c_source}${ero.verified === false ? " - " + t("nyv") : ""}</li>${ero.slope_source ? `<li>${ero.slope_source}</li>` : ""}${ero.rain_source ? `<li>${ero.rain_source}</li>` : ""}</ul></div>`;
 }
 
@@ -979,7 +1051,7 @@ function renderStrategyCards(data, strategies) {
         }
         const cmp = `<div class="cmp" role="img" aria-label="${esc(rel)}"><span>${esc(st.id)}</span><div class="cmp-bar"><span style="width:${pctW(def)}%"></span></div>${base && !st.is_existing
             ? `<span>${esc(base.id)}</span><div class="cmp-bar base"><span style="width:${pctW(base.annual_deficit_mm)}%"></span></div>` : ""}</div>`;
-        const relLine = `<p class="rel-lbl${relCls}">${relIco}${rel}</p>`;
+        const relLine = st.is_existing ? "" : `<p class="rel-lbl${relCls}">${relIco}${rel}</p>`; // the badge already says "current"
         const calLbl = `<p class="cal-lbl">${bareN ? t("bare_n", { n: bareN }) : t("bare_none")}</p>`;
 
         let delta = "";
@@ -989,7 +1061,6 @@ function renderStrategyCards(data, strategies) {
             delta = `<span class="delta ${dm > 0 ? "up" : "down"}">(${dm > 0 ? "+" : "−"}${fmt(Math.abs(dm))} m³)</span>`;
         }
         const benefits = sText(st, "benefits") || [], risks = sText(st, "risks") || [], gaps = sText(st, "info_gaps") || [];
-        const top = [benefits[0] ? `<li class="good-item">${benefits[0]}</li>` : "", risks[0] ? `<li class="risk-item">${risks[0]}</li>` : ""].join("");
         const evidence = (st.evidence || []).map((ev, k) =>
             `<li>${evText(st, k)} <span class="muted">(${ev.source}${ev.verified === false ? " - " + t("nyv") : ""})</span></li>`).join("");
         const calc = (st.phases || []).map(ph => {
@@ -1004,17 +1075,17 @@ function renderStrategyCards(data, strategies) {
         const list = (h, arr, cls) => (arr.length ? `<div><h4>${h}</h4><ul class="bullet-list">${arr.map(x => `<li class="${cls}">${x}</li>`).join("")}</ul></div>` : "");
         const water = `<div class="metric-val">${num("d-" + currentRegion + st.id, def, 0, 10)} <small>m³/ha</small>${delta}</div>
             <div class="metric-lbl">${waterLabel(st)}${st.partial ? ` · ${t("shrimp_nm")}` : ""} · ${t("per1000", { v: fmt(def) })}</div>`;
+        const waterFace = `<div class="metric-val">${num("d-" + currentRegion + st.id, def, 0, 10)} <small>m³/ha</small>${delta}</div>
+            <div class="metric-lbl">${waterLabel(st)}</div>`;
 
         return `
         <article class="rot-card reveal${st.is_existing ? " is-baseline" : ""}${bestAlt && bestAlt.id === st.id ? " is-best" : ""}" data-strategy-id="${esc(st.id)}" style="--i:${i}">
             <div class="rot-top">${badge}<h3 class="rot-title"><span class="rot-id">${esc(st.id)}</span><span class="rot-name">${stratName(st)}</span></h3></div>
-            <div>${water}</div>
+            <div>${waterFace}</div>
             ${cmp}
             ${relLine}
-            ${yearLine(st)}
             ${calLbl}
             ${renderGanttTimeline(st, salMonths, usedCrops)}
-            ${top ? `<ul class="bullet-list top">${top}</ul>` : ""}
             <button type="button" class="more-btn" aria-haspopup="dialog">${t("details")}${ico("chev")}</button>
             <div class="more"><div>
                 <div>${water}</div>
@@ -1062,9 +1133,9 @@ const EV_ICONS = { sowingCheck: ["sprout", "ic-good"], rainCheck: ["rain", ""], 
 function evTile(el, kicker, title, take, sub, body) {
     const [icon, icCls] = EV_ICONS[el.id] || ["sat", ""];
     el.innerHTML = `<div class="ev-top"><span class="ic ${icCls}">${ico(icon)}</span><span class="ev-kicker">${kicker}</span></div>
-        <h3 class="ev-title">${title}</h3><p class="ev-take">${take}</p>${sub || ""}
+        <h3 class="ev-title">${title}</h3><p class="ev-take">${take}</p>
         <button type="button" class="more-btn link" aria-haspopup="dialog">${t("see_data")}${ico("chev")}</button>
-        <div class="more"><div>${body}</div></div>`;
+        <div class="more"><div>${sub || ""}${body}</div></div>`;
     el.classList.add("reveal");
     el.style.setProperty("--i", Object.keys(EV_ICONS).indexOf(el.id));
     el.hidden = false;
@@ -1100,7 +1171,7 @@ function renderSowing(data) {
     const gt = (os.ground_truth_checks || []).map(g => {
         const diff = Number(g.difference_days);
         const rel = !isNum(g.difference_days) ? "" : diff === 0 ? t("d_same") : t(diff < 0 ? "d_earlier" : "d_later", { n: fmt(Math.abs(diff)) });
-        return `<p class="ev-sub" title="${esc(g.text)}">${t("sow_gt", { r: `${g.approximate ? "~" : ""}${fmtDate(g.date)}`, s: g.detected_date ? fmtDate(g.detected_date) : t("not_detected"), rel })}
+        return `<p class="ev-sub" title="${esc(vf(g, "text"))}">${t("sow_gt", { r: `${g.approximate ? "~" : ""}${fmtDate(g.date)}`, s: g.detected_date ? fmtDate(g.detected_date) : t("not_detected"), rel })}
             <span class="muted">${g.source}${g.verified === false ? "; " + t("nyv") : ""}</span></p>`;
     }).join("");
     const clouds = low.length ? `<p class="ev-sub warn">${ico("warn")}<span>${t("sow_clouds", { e: expected, n: low.length, m: spy.length })}</span></p>` : "";
@@ -1113,12 +1184,12 @@ function renderSowing(data) {
         : `<tr><td>${fmtDate(e.date)}</td><td class="muted">${t("sow_unm_row", { d: fmt(os.max_offset_days) })}</td><td class="num">${t("na")}</td></tr>`).join("");
     const body = `<ul class="src-list">${lines.join("")}</ul>
         <div class="sow-years"><span>${t("sow_years")}</span>${years}</div>${gap}${unmatched}
-        ${os.expected_error ? `<p class="muted">${t("exp_err")} ${os.expected_error}</p>` : ""}
+        ${os.expected_error ? `<p class="muted">${t("exp_err")} ${vf(os, "expected_error")}</p>` : ""}
         <div class="table-scroll"><table class="table-clean xc-table"><thead><tr><th>${t("th_detected")}</th><th>${t("th_season")}</th><th class="num">${t("th_vsmodel")}</th></tr></thead><tbody>${events}</tbody></table></div>
-        <p><strong>${t("method")}</strong> ${os.method || ""} <span class="muted">(${os.method_source || ""})</span></p>
-        ${os.assumptions ? `<p><strong>${t("assumptions")}</strong> ${os.assumptions}</p>` : ""}
+        <p><strong>${t("method")}</strong> ${vf(os, "method") || ""} <span class="muted">(${os.method_source || ""})</span></p>
+        ${os.assumptions ? `<p><strong>${t("assumptions")}</strong> ${vf(os, "assumptions")}</p>` : ""}
         <p><strong>${t("data")}</strong> ${os.source || ""}${isNum(os.n_composites_used) ? t("images_used", { n: fmt(os.n_composites_used) }) : ""}.</p>
-        ${(os.ground_truth_checks || []).map(g => `<p><strong>${t("ground")}</strong> ${g.text} <span class="muted">(${g.source})</span></p>`).join("")}`;
+        ${(os.ground_truth_checks || []).map(g => `<p><strong>${t("ground")}</strong> ${vf(g, "text")} <span class="muted">(${g.source})</span></p>`).join("")}`;
     evTile(el, t("ev_sow_k"), t("ev_sow_t"), take, gt + clouds, body);
 }
 
@@ -1185,9 +1256,9 @@ function renderErosionTile(data) {
     const take = t("ero_take", { p: fmt(ero.reduction_pct, 0), v: ero.verified === false ? "; " + t("nyv") : "" });
     const sub = isNum(ero.slope_deg_p50) ? `<p class="ev-sub">${t("ero_take2", { a: fixed(ero.slope_deg_p50, 1), b: fixed(ero.slope_deg_p90, 1),
         s: Math.round(ero.wet_season_rain_share * 100), m: monthSpans(ero.wet_season_months || []) })}</p>` : "";
-    const lbl = ero.c_labels || {};
+    const lbl = vf(ero, "c_labels") || {};
     const body = `<ul class="src-list"><li>${t("ero_c", { cb: ero.c_baseline, lb: lbl[ero.baseline_strategy] || ero.baseline_strategy, cc: ero.c_compared, lc: lbl[ero.compared_strategy] || ero.compared_strategy, r: ero.soil_loss_ratio })}</li>
-        ${(ero.caveats || []).map(c => `<li>${c}</li>`).join("")}</ul>
+        ${(vf(ero, "caveats") || []).map(c => `<li>${c}</li>`).join("")}</ul>
         <ul class="src-list"><li>${ero.c_source}${ero.verified === false ? " - " + t("nyv") : ""}</li>${ero.slope_source ? `<li>${ero.slope_source}</li>` : ""}${ero.rain_source ? `<li>${ero.rain_source}</li>` : ""}</ul>`;
     evTile(el, t("ev_ero_k"), t("ev_ero_t"), take, sub, body);
 }
@@ -1278,7 +1349,7 @@ const CSV_COLUMNS = ["row_type", "region", "delta_temp_c", "delta_rain_pct", "st
     "obs_date", "obs_month", "obs_value", "obs_value2", "obs_unit", "obs_source"];
 
 function downloadCsv() {
-    if (!lastRotations) return;
+    if (!lastRotations) return false;
     const tv = parseFloat(document.getElementById("sliderTemp").value);
     const r = parseInt(document.getElementById("sliderRain").value, 10);
     const data = lastRotationData || {};
@@ -1334,6 +1405,7 @@ function downloadCsv() {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    return true;
 }
 
 // ==========================================================================
@@ -1359,16 +1431,18 @@ async function loadReport() {
     reportReady = false;
     updateReportContext();
     const outputEl = document.getElementById("chatOutput");
-    outputEl.classList.remove("idle");
-    outputEl.innerHTML = `<em>${t("computing")}</em>`;
+    outputEl.classList.remove("idle", "fresh");
+    outputEl.innerHTML = `<p class="muted" role="status">${t("computing")}</p><span class="skel skel-line"></span><span class="skel skel-line"></span><span class="skel skel-line short"></span>`;
     try {
         const res = await fetch("/api/advise", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...JSON.parse(scenarioBody()), strategy_id: selectedStrategy })
+            body: JSON.stringify({ ...JSON.parse(scenarioBody()), strategy_id: selectedStrategy, lang })
         });
         if (!res.ok) { outputEl.innerHTML = `<span class="txt-bad">${t("report_err", { c: res.status })}</span>`; return; }
         outputEl.innerHTML = renderSimpleMarkdown((await res.json()).markdown);
+        [...outputEl.children].forEach((c, i) => c.style.setProperty("--k", Math.min(i, 16)));
+        outputEl.classList.add("fresh"); // report blocks rise in one after another
         reportReady = true;
     } catch (e) {
         outputEl.innerHTML = `<span class="txt-bad">${t("conn_err", { m: esc(e.message) })}</span>`;

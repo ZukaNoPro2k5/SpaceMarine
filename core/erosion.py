@@ -37,6 +37,13 @@ def _gee(name, region_id, required_cols):
     return df, get_manifest().get(rel, {})
 
 
+def _caveats_vi(cfg):
+    """Vietnamese caveats, same order and length as the English ones; a missing item falls back to English."""
+    en = cfg.get("caveats", [])
+    vi = cfg.get("caveats_vi") or []
+    return [vi[i] if i < len(vi) and vi[i] else t for i, t in enumerate(en)]
+
+
 def erosion_comparison(region_id):
     cfg = _cfg().get(region_id)
     if not cfg:
@@ -52,11 +59,14 @@ def erosion_comparison(region_id):
         "c_baseline": c_base,
         "c_compared": c_alt,
         "c_labels": {base_sid: c[base_key]["label"], alt_sid: c[alt_key]["label"]},
+        "c_labels_vi": {base_sid: c[base_key].get("label_vi") or c[base_key]["label"],
+                        alt_sid: c[alt_key].get("label_vi") or c[alt_key]["label"]},
         "soil_loss_ratio": round(c_alt / c_base, 3),
         "reduction_pct": round((1 - c_alt / c_base) * 100, 1),
         "c_source": cfg["c_source"],
         "verified": bool(cfg.get("verified", False)),
         "caveats": cfg.get("caveats", []),
+        "caveats_vi": _caveats_vi(cfg),
         "slope_deg_p50": None,
         "slope_deg_p90": None,
         "wet_season_rain_share": None,

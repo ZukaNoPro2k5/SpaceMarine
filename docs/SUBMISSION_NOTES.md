@@ -87,13 +87,16 @@ Every modeled phase is evaluated for each year 2015–2025. A **crop year** `y` 
 - **Green-up confirmation:** the flood is accepted as rice establishment if EVI reaches half of the crop-cycle maximum within five 8-day composites (Xiao et al. 2005).
 - **App assumptions (stated, not sourced):** crop-cycle peak EVI ≥ 0.35; detections less than 60 days apart are merged; a composite is used only if ≥ 50% of the window is cloud-free; a detection more than 60 days from every configured sowing date is "unmatched" (excluded from the medians), and a field report is compared only with a detection within 60 days.
 - Detected dates are matched to the nearest configured sowing date (Summer–Autumn `05-25`, Winter–Spring `11-01`) and reported as offsets; one dated field report (Ba Tri, Winter–Spring sown around 22 Nov 2023) is used as a ground check.
+- **Vietnamese text:** the `observed_sowing` payload also carries `method_vi`, `expected_error_vi`, `assumptions_vi` and `text_vi` on each `ground_truth_checks` entry, translated in `config/phenology.json` (`rule_vi`, `text_vi`, `note_vi`); a missing translation falls back to English.
 
 ### 2.7. Independent Cross-Checks (T4, T5)
 - **Rainfall (T5):** monthly POWER `PRECTOTCORR` totals vs. GPM IMERG Final monthly over the overlapping months; mean per calendar month, annual ratio and monthly correlation.
 - **Soil moisture (T4, Đắk Lắk):** SMAP L4 root-zone soil moisture, mean of January–April per year, minus the 2015–2025 mean of the same months (anomaly, m³/m³), set against the model's yearly dry-season deficit for current practice (D0). Bến Tre is excluded: a 9 km SMAP cell over flooded coastal paddies mixes open water and fields.
 
 ### 2.8. Relative Soil Loss, Bare vs. Cover-Cropped Coffee (T7, `core/erosion.py`, `config/erosion.json`)
-RUSLE: $A = R \cdot K \cdot LS \cdot C \cdot P$. D0 (clean-weeded inter-rows) and D1 (cover crop) share the same rain, soil and slope, so $R$, $K$, $LS$ and $P$ cancel and $A_{D1}/A_{D0} = C_{D1}/C_{D0}$. C-factors are plot measurements for coffee in Lampung, Indonesia (Afandi et al. 2003): 0.045 clean-weeded, 0.006 with *Paspalum conjugatum* cover. No absolute tonnes are reported. SRTM slope and the IMERG wet-season rain share are shown as site context only.
+RUSLE: $A = R \cdot K \cdot LS \cdot C \cdot P$. D0 (clean-weeded inter-rows) and D1 (cover crop) share the same rain, soil and slope, so $R$, $K$, $LS$ and $P$ cancel and $A_{D1}/A_{D0} = C_{D1}/C_{D0}$. C-factors are plot measurements for coffee in Lampung, Indonesia (Afandi et al. 2003): 0.045 clean-weeded, 0.006 with *Paspalum conjugatum* cover. No absolute tonnes are reported. SRTM slope and the IMERG wet-season rain share are shown as site context only. The `cross_checks.erosion` payload also carries Vietnamese `caveats_vi` (same order as `caveats`) and `c_labels_vi`.
+
+The advisory report (`POST /api/advise`, `core/advisor.py`) takes an optional `lang` (`"en"` default, `"vi"`). The Vietnamese report translates the English template and takes strategy names, risks and knowledge gaps from each strategy's `vi` block in `config/rotations.json`; numbers use Vietnamese separators (e.g. 17.402), and source titles stay in their original language.
 
 ### 2.9. Sources in `config/rotations.json` and `config/crops.json`
 
@@ -191,6 +194,7 @@ Results below were computed by the app on the committed real data (NASA POWER re
 | Leaflet | `1.9.4` (vendored offline) | `1.9.4` | BSD-2-Clause | Interactive map rendering (`L.circleMarker`) |
 | Chart.js | `4.4.1` (vendored offline) | `4.4.1` | MIT | Monthly rainfall, $ET_o$, and MODIS NDVI visualization |
 | OpenStreetMap Tiles | Online when reachable | N/A | ODbL (`© OpenStreetMap contributors`) | Optional background basemap tiles |
+| interior.dev motion values (via [screenrove.com/motion](https://screenrove.com/motion)) | none (CSS values only) | N/A | MIT | Spring easing curves (`linear()` values and durations) used for UI transitions in `web/style.css`; the app code is our own vanilla rewrite |
 
 ### AI & Tooling Disclosure
 The problem framing, choice of pilot sites, strategies and the research plan behind each analysis were made by the team. AI coding assistants were used to write and review code and documentation under the team's direction: Google Antigravity (Gemini) for the initial scaffold, and Anthropic Claude (Claude Code) for the year-to-year analysis, the satellite sowing-date detection, the IMERG/SMAP/SRTM cross-checks, the English translation of the interface and documentation, and code review. All numbers shown in the app come from NASA data processed by the code in `core/` or from cited sources in `config/*.json`; no AI-generated data, images or video are used.
